@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.20)
 ################################################################################
 # Project name and configuration
 project(
-  "util"
+  "app"
   VERSION 0.1.0
   DESCRIPTION
-    "Example C++ CMake library."
+    "Example C++ CMake application."
   HOMEPAGE_URL ""
   LANGUAGES CXX)
 
@@ -24,46 +24,37 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 ################################################################################
 # List any package dependencies
 find_package(spdlog)
-find_package(OpenSSL)
+find_package(util)
 
 ################################################################################
 # Create a shared library
-add_library(${PROJECT_NAME} SHARED)
+add_executable(${PROJECT_NAME})
 
 ################################################################################
 # Target include files
 file(GLOB PUBLIC_HEADER_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp
 )
 
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
-    # where the library itself will look for its internal headers
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
-  PUBLIC
-    # where top-level project will look for the library's public headers
+target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
-    # where external projects will look for the library's public headers
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<INSTALL_INTERFACE:include>
 )
 
 ################################################################################
 # Target source files
 file(GLOB SOURCE_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
-target_sources(${PROJECT_NAME}
-  PRIVATE
+target_sources(${PROJECT_NAME} PRIVATE
     $<BUILD_INTERFACE:${SOURCE_FILES}>
 )
 
 ################################################################################
 # Link in depedent libraries
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    OpenSSL::SSL
-)
+  PRIVATE util::util)
 
 ################################################################################
 # Build tests
