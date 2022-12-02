@@ -11,6 +11,16 @@ project(
   LANGUAGES CXX)
 
 ################################################################################
+# Do NOT allow in-source builds
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+message(
+  FATAL_ERROR
+    "In-source builds not allowed. "
+    "Please make a build directory and run CMake from there."
+)
+endif()
+
+################################################################################
 # Includes
 include(CMakePackageConfigHelpers)
 include(CTest)
