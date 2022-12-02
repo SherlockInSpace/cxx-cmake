@@ -1,9 +1,5 @@
 #include "bloom.hpp"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/fmt/bin_to_hex.h>
-
 using namespace util;
 
 Bloom::Bloom(size_t hashFunctionCount) :
@@ -24,7 +20,7 @@ Bloom::Bloom(size_t hashFunctionCount) :
             "hashFunctionCount too large! "
             "hashFunctionCount *  kBytesPerHashFunction must be smaller or "
             "equal to kMD5ResultSize");
-    }   
+    }
 }
 
 void Bloom::insert(const std::string& object)

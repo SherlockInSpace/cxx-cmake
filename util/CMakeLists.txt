@@ -23,7 +23,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 ################################################################################
 # List any package dependencies
-find_package(spdlog)
 find_package(OpenSSL)
 
 ################################################################################
