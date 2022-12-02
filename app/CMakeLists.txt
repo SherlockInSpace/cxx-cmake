@@ -64,7 +64,10 @@ target_sources(${PROJECT_NAME} PRIVATE
 ################################################################################
 # Link in depedent libraries
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE util::util)
+  PRIVATE
+    spdlog::spdlog
+    util::util
+)
 
 ################################################################################
 # Build tests
