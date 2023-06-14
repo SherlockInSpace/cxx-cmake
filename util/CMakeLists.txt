@@ -78,6 +78,10 @@ target_link_libraries(${PROJECT_NAME}
 # Build tests
 if (BUILD_TEST)
   enable_testing()
+  if (TEST_COVERAGE)
+    include(cmake/CodeCoverage.cmake)
+    append_coverage_compiler_flags_to_target(${PROJECT_NAME})
+  endif()
   add_subdirectory(test)
 endif()
 

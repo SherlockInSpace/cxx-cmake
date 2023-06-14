@@ -26,4 +26,15 @@ foreach(file ${SOURCE_FILES})
     # Alternatively they can all be run on the command line.
     gtest_discover_tests(${TEST_EXECUTABLE})
 
+    # Only enable lcov if TEST_COVERAGE is enabled.
+    # NOTE: There is probably a more efficient way of doing this. We can also
+    # debate whether it's more pragmatic to have a single executable with all
+    # source files, or individual ones.
+    if (TEST_COVERAGE)
+      setup_target_for_coverage_lcov(
+        NAME ${TEST_EXECUTABLE}_coverage
+        EXECUTABLE ${TEST_EXECUTABLE}
+        EXCLUDE "/usr/include/*"
+      )
+    endif()
 endforeach()
