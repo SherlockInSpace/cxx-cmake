@@ -34,7 +34,7 @@ foreach(file ${SOURCE_FILES})
       setup_target_for_coverage_lcov(
         NAME ${TEST_EXECUTABLE}_coverage
         EXECUTABLE ${TEST_EXECUTABLE}
-        EXCLUDE "/usr/include/*"
+        EXCLUDE "/usr/include/*" "${PROJECT_SOURCE_DIR}/test/*"
       )
     endif()
 endforeach()
