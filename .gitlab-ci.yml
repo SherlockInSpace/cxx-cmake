@@ -13,7 +13,7 @@
 
 image: registry.gitlab.com/sherlockinspace/cxx-cmake-container:latest
 
-build-util:
+util-build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
@@ -35,10 +35,10 @@ build-util:
       #     - "*.o"
 
 # run tests using the binary built before
-test-util:
+util-test:
   stage: test
   dependencies:
-    - build-util
+    - util-build
   script:
     - pushd util/build
     - ctest --output-junit test-results.xml
@@ -46,3 +46,22 @@ test-util:
     when: always
     reports:
         junit: util/build/test-results.xml
+
+util-coverage:
+  stage: test
+  dependencies:
+    - util-build
+  script:
+    - pushd util/build
+    - ninja bit_tests_coverage
+    - ninja thread_pool_tests_coverage
+    - ninja bloom_tests_coverage
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 2 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: util/build/coverage.xml
+
