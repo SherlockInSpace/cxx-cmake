@@ -25,6 +25,7 @@ build:
     - mkdir build
     - pushd build
     - cmake -DBUILD_DOC=ON -DBUILD_TEST=UNIT -DTEST_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ../
+    - ninja
   artifacts:
     paths:
       - build/libutil.so
