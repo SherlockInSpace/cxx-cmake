@@ -14,7 +14,7 @@
 image: registry.gitlab.com/sherlockinspace/cxx-cmake-container:latest
 
 build:
-  stage: build
+  stage: build-util
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   # before_script:
@@ -28,7 +28,7 @@ build:
     - ninja -j$(nproc)
   artifacts:
     paths:
-      - build/libutil.so
+      - build/
       # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
       # cache:
       #   paths:
@@ -36,7 +36,9 @@ build:
 
 # run tests using the binary built before
 test:
-  stage: test
+  stage: test-util
+  dependencies:
+    - build-util
   script:
     - pushd util/build
     - ctest --output-junit test-results.xml
