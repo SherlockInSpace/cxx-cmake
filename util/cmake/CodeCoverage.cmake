@@ -736,18 +736,8 @@ endfunction() # append_coverage_compiler_flags
 function(append_coverage_compiler_flags_to_target name)
     get_target_property(target_type ${PROJECT_NAME} TYPE)
     separate_arguments(_flag_list NATIVE_COMMAND "${COVERAGE_COMPILER_FLAGS}")
-    target_compile_options(${name} PRIVATE ${_flag_list})
-    # If this is not an executable, then make sure that other targets which link
-    # against this include the '--coverage' flag for instrumentation of header
-    # files which may include function definitions.
-    if (NOT target_type STREQUAL "EXECUTABLE")
-        target_compile_options(${name} INTERFACE "--coverage")
-    endif()
+    target_compile_options(${name} PUBLIC ${_flag_list})
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-        if (target_type STREQUAL "EXECUTABLE")
-            target_link_libraries(${name} PRIVATE gcov)
-        else()
-            target_link_libraries(${name} PUBLIC gcov)
-        endif()
+        target_link_libraries(${name} PUBLIC gcov)
     endif()
 endfunction()
