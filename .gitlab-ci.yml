@@ -45,4 +45,4 @@ test-util:
   artifacts:
     when: always
     reports:
-        junit: test-results.xml
+        junit: util/build/test-results.xml
