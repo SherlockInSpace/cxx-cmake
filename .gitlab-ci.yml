@@ -24,8 +24,8 @@ build:
     - rm -fr build
     - mkdir build
     - pushd build
-    - cmake -DBUILD_DOC=ON -DBUILD_TEST=UNIT -DTEST_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ../
-    - ninja
+    - cmake -DBUILD_DOC=ON -DBUILD_TEST=UNIT -DTEST_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -GNinja ../
+    - ninja -j$(nproc)
   artifacts:
     paths:
       - build/libutil.so
