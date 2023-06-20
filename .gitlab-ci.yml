@@ -11,7 +11,7 @@
 # can use versions as well, like gcc:5.2
 # see https://hub.docker.com/_/gcc/
 
-image: gcc:13.1.0
+image: registry.gitlab.com/sherlockinspace/cxx-cmake-container:latest
 
 build:
   stage: build
