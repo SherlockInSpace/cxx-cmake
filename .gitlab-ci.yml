@@ -13,8 +13,8 @@
 
 image: registry.gitlab.com/sherlockinspace/cxx-cmake-container:latest
 
-build:
-  stage: build-util
+build-util:
+  stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   # before_script:
@@ -35,8 +35,8 @@ build:
       #     - "*.o"
 
 # run tests using the binary built before
-test:
-  stage: test-util
+test-util:
+  stage: test
   dependencies:
     - build-util
   script:
