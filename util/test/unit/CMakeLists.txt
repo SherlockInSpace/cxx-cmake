@@ -31,7 +31,7 @@ foreach(file ${SOURCE_FILES})
     # debate whether it's more pragmatic to have a single executable with all
     # source files, or individual ones.
     if (TEST_COVERAGE)
-      setup_target_for_coverage_lcov(
+      setup_target_for_coverage_gcovr_xml(
         NAME ${TEST_EXECUTABLE}_coverage
         EXECUTABLE ${TEST_EXECUTABLE}
         EXCLUDE "/usr/include/*" "${PROJECT_SOURCE_DIR}/test/*"

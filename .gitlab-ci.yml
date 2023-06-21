@@ -63,5 +63,5 @@ util-coverage:
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: util/build/coverage.xml
+        path: util/build/*tests_coverage.xml
 
