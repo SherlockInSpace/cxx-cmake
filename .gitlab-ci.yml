@@ -13,14 +13,13 @@
 
 image: registry.gitlab.com/sherlockinspace/cxx-cmake-container:latest
 
-util-build:
+build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   # before_script:
   #   - apt update && apt -y install make autoconf
   script:
-    - pushd util
     - rm -fr build
     - mkdir build
     - pushd build
@@ -28,31 +27,31 @@ util-build:
     - ninja -j$(nproc)
   artifacts:
     paths:
-      - util/build/
+      - build/
       # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
       # cache:
       #   paths:
       #     - "*.o"
 
 # run tests using the binary built before
-util-test:
+test:
   stage: test
   dependencies:
-    - util-build
+    - build
   script:
-    - pushd util/build
+    - pushd build
     - ctest --output-junit test-results.xml
   artifacts:
     when: always
     reports:
-        junit: util/build/test-results.xml
+        junit: build/test-results.xml
 
-util-coverage:
+coverage:
   stage: test
   dependencies:
-    - util-build
+    - build
   script:
-    - pushd util/build
+    - pushd build
     - ninja bit_tests_coverage
     - ninja thread_pool_tests_coverage
     - ninja bloom_tests_coverage
@@ -63,5 +62,5 @@ util-coverage:
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: util/build/*tests_coverage.xml
+        path: build/*tests_coverage.xml
 
