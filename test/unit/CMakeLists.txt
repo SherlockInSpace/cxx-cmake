@@ -31,6 +31,7 @@ foreach(file ${SOURCE_FILES})
     # debate whether it's more pragmatic to have a single executable with all
     # source files, or individual ones.
     if (TEST_COVERAGE)
+      set(GCOVR_ADDITIONAL_ARGS "--print-summary")
       setup_target_for_coverage_gcovr_xml(
         NAME ${TEST_EXECUTABLE}_coverage
         EXECUTABLE ${TEST_EXECUTABLE}
