@@ -8,7 +8,7 @@ the reasoning before "fixing" it; the reasoning that connects these entries is i
 [DESIGN.md](DESIGN.md). D0–D14 were settled in the planning rounds that preceded this repo's
 restructure; D15–D21 were settled when the issue-level backlog was drafted. Each entry points at
 the configuration that enforces it where one exists: the log is a map, not the source of truth.
-Some pointers name where enforcement lands per the roadmap and may precede the file they name; the
+Some pointers name where enforcement lands per the milestones and may precede the file they name; the
 same goes for defaults an amendment records ahead of the change that implements them.
 
 **Proposing a change.** Open an issue labelled `decision-needed` stating the decision ID, the change
@@ -239,7 +239,8 @@ to its replacement. Issues and PRs reference decisions by anchor: `docs/DECISION
   follow and modify them.
 - **Rationale.** PR-sized issues keep every diff reviewable line by line; committed scripts make the
   process reproducible rather than remembered.
-- **See also.** `tools/planning/`, `AGENTS.md`, `docs/ROADMAP.md`.
+- **See also.** `tools/planning/`, `AGENTS.md`. GitHub milestones and issues are the roadmap; there is
+  no roadmap file in any repo of the family (owner decision, 2026-09-03).
 
 <a id="d18"></a>
 ### D18 — JUnit rendering action
