@@ -1,19 +1,17 @@
 # cxx-cmake
 Template for building C++ projects/libraries/applications with CMake
 
-## Instructions
-Start off by setting your install directory location for the libraries to be built.
+> This README is being rewritten as the template manual; tracked in
+> <https://github.com/SherlockInSpace/cxx-cmake/issues/39>.
+
+## Building
+Configure, build, and run the unit tests from the repository root:
 
 ```
-export INSTALL_DIR="$(pwd)/install"
+cmake -S . -B build -G Ninja -DBUILD_TEST=UNIT
+cmake --build build
+ctest --test-dir build
 ```
 
-## util library
-To build the util library.
-
-```
-cd util
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" -DCMAKE_PREFIX_PATH="${INSTALL_DIR}" -DBUILD_TEST="UNIT" ../
-```
+To install the library, pass `-DCMAKE_INSTALL_PREFIX=<dir>` at configure time
+and run `cmake --install build`.
