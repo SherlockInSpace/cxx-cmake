@@ -4,9 +4,10 @@ This is the decision log for the cxx-cmake template family: the library template
 application template, the build-environment container images
 ([cxx-cmake-container](https://github.com/SherlockInSpace/cxx-cmake-container)) and the Yocto
 layer. It records *why* things are the way they are so that a reader, human or agentic, can check
-the reasoning before "fixing" it. D0–D14 were settled in the planning rounds that preceded this
-repo's restructure; D15–D21 were settled when the issue-level backlog was drafted. Each entry points
-at the configuration that enforces it where one exists: the log is a map, not the source of truth.
+the reasoning before "fixing" it; the reasoning that connects these entries is in
+[DESIGN.md](DESIGN.md). D0–D14 were settled in the planning rounds that preceded this repo's
+restructure; D15–D21 were settled when the issue-level backlog was drafted. Each entry points at
+the configuration that enforces it where one exists: the log is a map, not the source of truth.
 Some pointers name where enforcement lands per the roadmap and may precede the file they name; the
 same goes for defaults an amendment records ahead of the change that implements them.
 
