@@ -15,3 +15,8 @@ ctest --test-dir build
 
 To install the library, pass `-DCMAKE_INSTALL_PREFIX=<dir>` at configure time
 and run `cmake --install build`.
+
+## Documentation
+
+[docs/DESIGN.md](docs/DESIGN.md) explains how the pieces fit together; [docs/DECISIONS.md](docs/DECISIONS.md)
+explains why they are the way they are.
