@@ -6,27 +6,34 @@
 #include <iostream>
 #include <string>
 
-auto multiply(int a, int b) { return a * b; }
+auto multiply(int a, int b)
+{
+    return a * b;
+}
 
-TEST(thread_pool, globalMultiply) {
+TEST(thread_pool, globalMultiply)
+{
     util::thread_pool pool;
     auto result = pool.enqueue(multiply, 3, 4);
     EXPECT_EQ(result.get(), 12);
 }
 
-TEST(thread_pool, lambdaMultiply) {
+TEST(thread_pool, lambdaMultiply)
+{
     util::thread_pool pool;
     auto result = pool.enqueue([](int a, int b) { return a * b; }, 3, 4);
     EXPECT_EQ(result.get(), 12);
 }
 
-TEST(thread_pool, functorMultiply) {
+TEST(thread_pool, functorMultiply)
+{
     util::thread_pool pool;
     auto result = pool.enqueue(std::multiplies<int>{}, 3, 4);
     EXPECT_EQ(result.get(), 12);
 }
 
-TEST(thread_pool, passReference) {
+TEST(thread_pool, passReference)
+{
     int x = 2;
     {
         util::thread_pool pool;
@@ -35,7 +42,8 @@ TEST(thread_pool, passReference) {
     EXPECT_EQ(x, 4);
 }
 
-TEST(thread_pool, passRawReference) {
+TEST(thread_pool, passRawReference)
+{
     int x = 2;
     {
         util::thread_pool pool;
@@ -44,7 +52,8 @@ TEST(thread_pool, passRawReference) {
     EXPECT_EQ(x, 2);
 }
 
-TEST(thread_pool, paramPassing) {
+TEST(thread_pool, paramPassing)
+{
     util::thread_pool pool(4);
     constexpr auto total_tasks = 30;
     std::vector<std::future<int>> futures;
@@ -60,9 +69,11 @@ TEST(thread_pool, paramPassing) {
     }
 }
 
-TEST(thread_pool, multiTypeParameter) {
+TEST(thread_pool, multiTypeParameter)
+{
     util::thread_pool pool{};
-    struct test_struct {
+    struct test_struct
+    {
         int value{};
         double d_value{};
     };
@@ -82,7 +93,8 @@ TEST(thread_pool, multiTypeParameter) {
     EXPECT_EQ(result.d_value, test.d_value);
 }
 
-TEST(thread_pool, workCompletedAfterDestruction) {
+TEST(thread_pool, workCompletedAfterDestruction)
+{
     std::atomic<int> counter;
     constexpr auto total_tasks = 30;
     {
@@ -99,7 +111,8 @@ TEST(thread_pool, workCompletedAfterDestruction) {
     EXPECT_EQ(counter.load(), total_tasks);
 }
 
-TEST(thread_pool, evenTaskLoading) {
+TEST(thread_pool, evenTaskLoading)
+{
     auto delay_task = [](const std::chrono::seconds& seconds) {
         std::cout << std::this_thread::get_id() << " start : " << std::to_string(seconds.count())
                   << "\n";
@@ -140,7 +153,8 @@ TEST(thread_pool, evenTaskLoading) {
     EXPECT_LT(duration.count(), long_task_time * 2);
 }
 
-TEST(thread_pool, taskExeceptionDoesNotKill) {
+TEST(thread_pool, taskExeceptionDoesNotKill)
+{
     auto throw_task = [](int) -> int { throw std::logic_error("Error occurred."); };
     auto regular_task = [](int input) -> int { return input * 2; };
 
