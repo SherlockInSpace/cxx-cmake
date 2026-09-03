@@ -1,0 +1,527 @@
+{
+  "A-00": {
+    "number": 1,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/1"
+  },
+  "A-01": {
+    "number": 2,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/2"
+  },
+  "A-02": {
+    "number": 3,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/3"
+  },
+  "A-03": {
+    "number": 4,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/4"
+  },
+  "A-04": {
+    "number": 5,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/5"
+  },
+  "A-05": {
+    "number": 6,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/6"
+  },
+  "A-06": {
+    "number": 7,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/7"
+  },
+  "A-07": {
+    "number": 8,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/8"
+  },
+  "A-08": {
+    "number": 9,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/9"
+  },
+  "A-09": {
+    "number": 10,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/10"
+  },
+  "A-10": {
+    "number": 11,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/11"
+  },
+  "A-11": {
+    "number": 12,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/12"
+  },
+  "A-12": {
+    "number": 13,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/13"
+  },
+  "A-13": {
+    "number": 14,
+    "repo": "SherlockInSpace/cxx-cmake-app",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-app/issues/14"
+  },
+  "C-01": {
+    "number": 14,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/14"
+  },
+  "C-02": {
+    "number": 1,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/1"
+  },
+  "C-03": {
+    "number": 15,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/15"
+  },
+  "C-04": {
+    "number": 2,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/2"
+  },
+  "C-05": {
+    "number": 3,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/3"
+  },
+  "C-06": {
+    "number": 4,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/4"
+  },
+  "C-07": {
+    "number": 5,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/5"
+  },
+  "C-08": {
+    "number": 6,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/6"
+  },
+  "C-09": {
+    "number": 7,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/7"
+  },
+  "C-10": {
+    "number": 8,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/8"
+  },
+  "C-11": {
+    "number": 9,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/9"
+  },
+  "C-12": {
+    "number": 16,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/16"
+  },
+  "C-13": {
+    "number": 17,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/17"
+  },
+  "C-14": {
+    "number": 18,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/18"
+  },
+  "C-16": {
+    "number": 19,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/19"
+  },
+  "C-17": {
+    "number": 12,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/12"
+  },
+  "C-18": {
+    "number": 10,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/10"
+  },
+  "C-19": {
+    "number": 11,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/11"
+  },
+  "C-20": {
+    "number": 13,
+    "repo": "SherlockInSpace/cxx-cmake-container",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake-container/issues/13"
+  },
+  "L-01": {
+    "number": 1,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/1"
+  },
+  "L-02": {
+    "number": 2,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/2"
+  },
+  "L-03": {
+    "number": 3,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/3"
+  },
+  "L-04": {
+    "number": 4,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/4"
+  },
+  "L-05": {
+    "number": 5,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/5"
+  },
+  "L-06": {
+    "number": 6,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/6"
+  },
+  "L-07": {
+    "number": 7,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/7"
+  },
+  "L-08": {
+    "number": 8,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/8"
+  },
+  "L-09": {
+    "number": 9,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/9"
+  },
+  "L-10": {
+    "number": 10,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/10"
+  },
+  "L-11": {
+    "number": 11,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/11"
+  },
+  "L-12": {
+    "number": 12,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/12"
+  },
+  "L-13": {
+    "number": 13,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/13"
+  },
+  "L-14": {
+    "number": 14,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/14"
+  },
+  "L-15": {
+    "number": 15,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/15"
+  },
+  "L-16": {
+    "number": 16,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/16"
+  },
+  "L-17": {
+    "number": 17,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/17"
+  },
+  "L-18": {
+    "number": 18,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/18"
+  },
+  "L-19": {
+    "number": 19,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/19"
+  },
+  "L-20": {
+    "number": 20,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/20"
+  },
+  "L-21": {
+    "number": 21,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/21"
+  },
+  "L-22": {
+    "number": 22,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/22"
+  },
+  "L-23": {
+    "number": 23,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/23"
+  },
+  "L-24": {
+    "number": 24,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/24"
+  },
+  "L-25": {
+    "number": 25,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/25"
+  },
+  "L-26": {
+    "number": 26,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/26"
+  },
+  "L-27": {
+    "number": 27,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/27"
+  },
+  "L-28": {
+    "number": 35,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/35"
+  },
+  "L-29": {
+    "number": 28,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/28"
+  },
+  "L-30": {
+    "number": 36,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/36"
+  },
+  "L-31": {
+    "number": 31,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/31"
+  },
+  "L-32": {
+    "number": 32,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/32"
+  },
+  "L-33": {
+    "number": 37,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/37"
+  },
+  "L-34": {
+    "number": 38,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/38"
+  },
+  "L-35": {
+    "number": 33,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/33"
+  },
+  "L-36": {
+    "number": 39,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/39"
+  },
+  "L-37": {
+    "number": 40,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/40"
+  },
+  "L-38": {
+    "number": 29,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/29"
+  },
+  "L-39": {
+    "number": 30,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/30"
+  },
+  "L-40": {
+    "number": 41,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/41"
+  },
+  "L-41": {
+    "number": 42,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/42"
+  },
+  "L-42": {
+    "number": 43,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/43"
+  },
+  "L-43": {
+    "number": 44,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/44"
+  },
+  "L-44": {
+    "number": 45,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/45"
+  },
+  "L-45": {
+    "number": 46,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/46"
+  },
+  "L-46": {
+    "number": 47,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/47"
+  },
+  "L-47": {
+    "number": 48,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/48"
+  },
+  "L-48": {
+    "number": 49,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/49"
+  },
+  "L-49": {
+    "number": 50,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/50"
+  },
+  "L-50": {
+    "number": 51,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/51"
+  },
+  "L-51": {
+    "number": 52,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/52"
+  },
+  "L-52": {
+    "number": 53,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/53"
+  },
+  "L-53": {
+    "number": 34,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/34"
+  },
+  "L-54": {
+    "number": 54,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/54"
+  },
+  "L-55": {
+    "number": 55,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/55"
+  },
+  "L-56": {
+    "number": 56,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/56"
+  },
+  "L-57": {
+    "number": 57,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/57"
+  },
+  "L-58": {
+    "number": 58,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/58"
+  },
+  "L-59": {
+    "number": 59,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/59"
+  },
+  "L-60": {
+    "number": 60,
+    "repo": "SherlockInSpace/cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/cxx-cmake/issues/60"
+  },
+  "Y-01": {
+    "number": 1,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/1"
+  },
+  "Y-02": {
+    "number": 2,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/2"
+  },
+  "Y-03": {
+    "number": 3,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/3"
+  },
+  "Y-04": {
+    "number": 4,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/4"
+  },
+  "Y-05": {
+    "number": 8,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/8"
+  },
+  "Y-06": {
+    "number": 9,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/9"
+  },
+  "Y-07": {
+    "number": 5,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/5"
+  },
+  "Y-08": {
+    "number": 10,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/10"
+  },
+  "Y-09": {
+    "number": 6,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/6"
+  },
+  "Y-10": {
+    "number": 7,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/7"
+  },
+  "Y-11": {
+    "number": 11,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/11"
+  },
+  "Y-12": {
+    "number": 12,
+    "repo": "SherlockInSpace/meta-cxx-cmake",
+    "url": "https://github.com/SherlockInSpace/meta-cxx-cmake/issues/12"
+  }
+}

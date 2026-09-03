@@ -1,0 +1,1532 @@
+{
+  "owner": "SherlockInSpace",
+  "repos": {
+    "C": "cxx-cmake-container",
+    "Y": "meta-cxx-cmake",
+    "L": "cxx-cmake",
+    "A": "cxx-cmake-app"
+  },
+  "milestones": {
+    "1": "Phase 1 — Foundations",
+    "2": "Phase 2 — Portability & CI cutover",
+    "3": "Phase 3 — Quality gates, docs, agents",
+    "4": "Phase 4 — Performance tier",
+    "5": "Phase 5 — App template & Yocto"
+  },
+  "items": {
+    "C-01": {
+      "id": "C-01",
+      "repo": "cxx-cmake-container",
+      "title": "ops: repository settings",
+      "size": "ops",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "public; squash-only (`gh repo edit --enable-squash-merge --enable-merge-commit=false --enable-rebase-merge=false --delete-branch-on-merge` + `main` ruleset with `allowed_merge_methods: [squash]`, PR required, linear history; the gate becomes a required check once C-08 exists); labels + milestones",
+      "ops": true,
+      "placeholder": false
+    },
+    "C-02": {
+      "id": "C-02",
+      "repo": "cxx-cmake-container",
+      "title": "chore: remove GitLab CI template and stock README",
+      "size": "XS",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "no `.gitlab-ci.yml`; README is a 10-line stub; `grep -ri gitlab` empty",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-03": {
+      "id": "C-03",
+      "repo": "cxx-cmake-container",
+      "title": "chore: add MIT license and REUSE metadata",
+      "size": "XS",
+      "phase": 1,
+      "after": [
+        "C-02"
+      ],
+      "after_note": "",
+      "done_when": "root `LICENSE` + `LICENSES/MIT.txt` + `REUSE.toml`; GitHub badge shows MIT; `pipx run reuse lint` passes",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-04": {
+      "id": "C-04",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): ci stage on ubuntu:26.04 with snapshot-pinned apt and the GCC 15 toolchain",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-02"
+      ],
+      "after_note": "",
+      "done_when": "`FROM ubuntu:26.04@sha256:<index digest>` (today `2260313b…`, = `resolute-20260811.1`; `imagetools inspect` lists amd64 + arm64); `ARG UBUNTU_SNAPSHOT=<ID>` (empty = live archive, documented fallback; CI always pins); `ca-certificates` first, then `ubuntu.sources` rewritten on both arches to `archive.ubuntu.com` + `Snapshot:`; `apt-cache policy gcc-15 libc6` lists only `snapshot.ubuntu.com` origins on amd64 and arm64; `gcc g++` metapackages (no `update-alternatives`), binutils, make, git, curl, pkg-config, ccache, python3, xz-utils, file; stock `ubuntu` user/group removed; no `USER`, no sudo; `/etc/cxx-cmake-container/versions.txt` = base digest + snapshot ID + full `dpkg-query -W` manifest",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-05": {
+      "id": "C-05",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): CMake 4.3.1 pin, baseline dependencies and quality tooling",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-04"
+      ],
+      "after_note": "",
+      "done_when": "CMake tarball by `uname -m` with SHA256 (x86_64 `208d7680…b1d8`, aarch64 `2c0eca48…c1ac`) into `/usr/local`; `ninja-build`; `libssl-dev`, `libgtest-dev`, `libgmock-dev`; `clang-22 clang-tidy-22 clang-format-22 libclang-rt-22-dev` only (`dpkg -l | grep -c 'clang.*-21'` = 0), unversioned symlinks → 22; `doxygen graphviz gcovr`; doxygen-awesome-css at a pinned tag, SHA256-verified, under `/usr/share/doxygen-awesome-css`; `find_package(OpenSSL)` and `find_package(GTest CONFIG)` succeed in-container",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-06": {
+      "id": "C-06",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): dev stage (non-root user, zsh, sudo)",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-04"
+      ],
+      "after_note": "",
+      "done_when": "`--build-arg UID=1000` and `UID=1234` both build; `id -u`/`id -g` inside equal the args; `touch /work/x` from the container is owned by the host user; sudo NOPASSWD; zsh + a checked-in `.zshrc`; no network fetches beyond snapshot apt",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-07": {
+      "id": "C-07",
+      "repo": "cxx-cmake-container",
+      "title": "test: smoke script asserting the toolchain contract",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-05",
+        "C-06"
+      ],
+      "after_note": "",
+      "done_when": "`test/smoke.sh` runs in `ci` and `dev`; asserts every parity-table row against `test/expected-versions.env` (gcc/g++ major.minor, `ld --version`, `ldd --version`, cmake, ninja, clang, `pkg-config --modversion openssl gtest`, gcovr, doxygen); configure probe with `find_package(OpenSSL REQUIRED)` + `find_package(GTest CONFIG REQUIRED)`; compiles and runs a C++23 probe (`<expected>`, `<print>`); snapshot ID and base digest in `versions.txt` match the build args",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-08": {
+      "id": "C-08",
+      "repo": "cxx-cmake-container",
+      "title": "ci: PR gate — build both stages on amd64 and arm64, smoke test, PR-title lint",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-07"
+      ],
+      "after_note": "",
+      "done_when": "one job per arch (`ubuntu-24.04`, `ubuntu-24.04-arm`; native, no QEMU) builds `--target ci` then `--target dev` with `cache-from/to: type=gha,scope=<arch>` (`mode=min`) and `load: true`, runs the smoke test on both; nothing pushed; `concurrency: cancel-in-progress`; `amannn/action-semantic-pull-request@v6` job",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-09": {
+      "id": "C-09",
+      "repo": "cxx-cmake-container",
+      "title": "ci: release-please maintaining CHANGELOG and tags",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-08"
+      ],
+      "after_note": "",
+      "done_when": "`googleapis/release-please-action@v5`, `release-type: simple`, `release-please-config.json` + `.release-please-manifest.json`, `bump-minor-pre-major` until 1.0; runs with a fine-grained PAT (`RELEASE_PLEASE_TOKEN`, contents + pull-requests write) so the release PR triggers C-08; merging it creates `vX.Y.Z` + GitHub Release",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-10": {
+      "id": "C-10",
+      "repo": "cxx-cmake-container",
+      "title": "ci: publish multi-arch images to GHCR on release",
+      "size": "M",
+      "phase": 1,
+      "after": [
+        "C-09"
+      ],
+      "after_note": "",
+      "done_when": "in the release workflow, gated on `release_created`, plus `workflow_dispatch(version)` that checks out `v<version>` and **fails if `…/ci:<version>` already resolves** (re-publish only repairs a failed publish; anything else is a new patch release); per-arch `push-by-digest`, merge job `docker buildx imagetools create` with `DOCKER_METADATA_ANNOTATIONS_LEVELS=index`; tags from metadata-action v6 with `value=${{ tag_name }}`: `X.Y.Z`, `X.Y`, and `X` only when major ≠ 0; `flavor: latest=false`; labels/annotations source, revision, version, licenses, base.name, base.digest, title (`cxx-cmake-container ci`/`dev`), description; `sbom: true`, `provenance: true`; both `…/ci` and `…/dev`; `docker manifest inspect` shows linux/amd64 + linux/arm64; release notes list both index digests; the manual `docker/github-builder` alternative evaluated and the choice recorded in the PR",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-11": {
+      "id": "C-11",
+      "repo": "cxx-cmake-container",
+      "title": "ops: flip both GHCR packages public and confirm the repo link",
+      "size": "ops",
+      "phase": 1,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "`docker pull ghcr.io/…/ci:X.Y.Z` and `…/dev:X.Y.Z` succeed unauthenticated; both packages show the repo link",
+      "ops": true,
+      "placeholder": false
+    },
+    "C-12": {
+      "id": "C-12",
+      "repo": "cxx-cmake-container",
+      "title": "chore: dependabot for actions and base image",
+      "size": "XS",
+      "phase": 1,
+      "after": [
+        "C-08"
+      ],
+      "after_note": "",
+      "done_when": "`.github/dependabot.yml` covers `github-actions` + `docker` with `ignore: version-update:semver-major/minor` for `ubuntu` (digest refreshes only); README bump procedure states the snapshot ID is the real bump",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-13": {
+      "id": "C-13",
+      "repo": "cxx-cmake-container",
+      "title": "docs: README, AGENTS.md, ROADMAP slice",
+      "size": "S (prose)",
+      "phase": 1,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "parity table with exact strings and the version-level-only statement; tag policy and semver meaning (D19); \"why no latest\"; reproducibility = image digest for consumers, snapshot ID + base digest for rebuilds; `docker run -v <workspace>:/work` one-liner with a ccache volume; stage table; bump procedure (snapshot, base digest, CMake, point release); licence label caveat; \"built on Ubuntu 26.04 LTS packages; not affiliated with or endorsed by Canonical\"; `AGENTS.md` (canonical build/smoke commands) + `CLAUDE.md` pointer; `ROADMAP.md` slice linking the issues",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-01": {
+      "id": "Y-01",
+      "repo": "meta-cxx-cmake",
+      "title": "ops: create repo, settings, labels, milestones",
+      "size": "ops",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "public `SherlockInSpace/meta-cxx-cmake`; same settings as C-01",
+      "ops": true,
+      "placeholder": false
+    },
+    "Y-02": {
+      "id": "Y-02",
+      "repo": "meta-cxx-cmake",
+      "title": "feat: layer skeleton",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "Y-01"
+      ],
+      "after_note": "",
+      "done_when": "`conf/layer.conf` (priority 6, compat `wrynose`, depends `core openembedded-layer`, version 1); `COPYING.MIT` + `LICENSE`; README (maintainer, patch instructions, email); `SECURITY.md`; `.gitignore`; `bitbake-layers add-layer` accepts it",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-03": {
+      "id": "Y-03",
+      "repo": "meta-cxx-cmake",
+      "title": "build(kas): pinned kas configs for the wrynose 6.0.2 component repos and this layer",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "Y-02"
+      ],
+      "after_note": "",
+      "done_when": "`kas/qemuarm64.yml` (schema 23; `distro: poky`; repos bitbake `layers: {\".\": disabled}`, openembedded-core `meta`, meta-yocto `meta-poky`, meta-openembedded `meta-oe`, this repo; `branch:` in the config, commits in a committed `kas/qemuarm64.lock.yml` from `kas lock`; bump = `kas lock --update`); `kas/check-layer.yml` includes it with this layer disabled; `SSTATE_DIR`/`DL_DIR` documented outside `KAS_WORK_DIR/build`; CI job runs `kas checkout` via `kas-container` with `KAS_CLONE_DEPTH=1` (source reachability proven)",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-04": {
+      "id": "Y-04",
+      "repo": "meta-cxx-cmake",
+      "title": "feat(recipes): util recipe pinned by SRCREV to the library tip",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "Y-03"
+      ],
+      "after_note": "",
+      "done_when": "`recipes-libs/util/util_git.bb`: `PV = \"0.1.0+git\"`, `SRC_URI = \"git://github.com/SherlockInSpace/cxx-cmake.git;protocol=https;branch=library\"`, `SRCREV = \"5a0f735…\"`, `LICENSE = \"MIT\"`, `LIC_FILES_CHKSUM = \"file://LICENSE;md5=<computed>\"` (the repo's own file, so a licence change breaks the recipe by design), `DEPENDS = \"openssl\"`, `inherit cmake pkgconfig`, no `S`, `EXTRA_OECMAKE = \"-DBUILD_TEST=OFF -DBUILD_DOC=OFF\"`; `kas build --target util` on the workstation reaches `do_package_qa` and its output — expected today: `dev-elf` error for the unversioned `libutil.so`, and `oe-pkgdata-util list-package-files util` showing `utilConfig.cmake` in the runtime package — is pasted into the issue as the baseline evidence for L-21/L-22/L-24; `local_conf_header` documents the dev override `INHERIT += \"externalsrc\"` / `EXTERNALSRC:pn-util = \"/work/cxx-cmake-library\"`",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-05": {
+      "id": "Y-05",
+      "repo": "meta-cxx-cmake",
+      "title": "ci: yocto-check-layer and PR-title lint",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "Y-04"
+      ],
+      "after_note": "",
+      "done_when": "`kas-container shell kas/check-layer.yml -c 'yocto-check-layer --dependency <oe-core>/meta <meta-oe>/meta-oe -- $GITHUB_WORKSPACE'` exits 0 (README/SECURITY/parse/world tests PASS; software-layer signature test off by default); wall-clock recorded; `KAS_CLONE_DEPTH=1`; bitbake `cache/` cached between runs; PR-title lint job",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-06": {
+      "id": "Y-06",
+      "repo": "meta-cxx-cmake",
+      "title": "docs: local build guide (kas-container loop)",
+      "size": "S (prose)",
+      "phase": 1,
+      "after": [
+        "Y-04"
+      ],
+      "after_note": "",
+      "done_when": "documents `kas build --target util`, the `externalsrc` override, where `SSTATE_DIR`/`DL_DIR` live, the expected QA output before/after the library fixes; no `populate_sdk` yet (its only consumer is C-20)",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-07": {
+      "id": "Y-07",
+      "repo": "meta-cxx-cmake",
+      "title": "feat(recipes): re-pin util to tag v0.2.0",
+      "size": "XS",
+      "phase": 2,
+      "after": [
+        "Y-04",
+        "L-39"
+      ],
+      "after_note": "",
+      "done_when": "`PV = \"0.2.0\"`, `SRC_URI … ;branch=main;tag=v${PV}`, `SRCREV` = the tag's commit, md5 recomputed; `bitbake util` QA-clean; `util-dev` contains `include/util/*.hpp` + `lib/cmake/util/*.cmake`",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-08": {
+      "id": "Y-08",
+      "repo": "meta-cxx-cmake",
+      "title": "feat(recipes): ptest packaging for util",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "Y-07"
+      ],
+      "after_note": "",
+      "done_when": "`PACKAGECONFIG[ptest] = \"-DBUILD_TESTING=ON,-DBUILD_TESTING=OFF,googletest\"` (enabled when `PTEST_ENABLED`); `file://run-ptest`; `do_install_ptest` copies `util_unit_tests` (googletest is static in meta-oe, so no runtime RDEPENDS); `bitbake util` produces `util-ptest` and QA is clean; **execution only on hardware** — the board lane (roadmap item 26) runs `ptest-runner util` on the target when a board exists; no `runqemu`",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-09": {
+      "id": "Y-09",
+      "repo": "meta-cxx-cmake",
+      "title": "ci: kas build of the recipes — the \"builds under BitBake\" proof",
+      "size": "M",
+      "phase": 3,
+      "after": [
+        "Y-07"
+      ],
+      "after_note": "",
+      "done_when": "`runs-on: ${{ vars.BITBAKE_RUNS_ON }}` (default `[self-hosted, linux, bitbake]`); `kas build --target util` green on `main` on the workstation runner (persistent `SSTATE_DIR`/`DL_DIR`; `push`/`workflow_dispatch` only, never `pull_request`); docs: register the workstation, register a rented VM under the same labels, larger-runner note (Team-plan organisations only); disk and wall-clock recorded",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-10": {
+      "id": "Y-10",
+      "repo": "meta-cxx-cmake",
+      "title": "ci: SDK job (populate_sdk) publishing installers as release assets",
+      "size": "M",
+      "phase": 3,
+      "after": [
+        "Y-09"
+      ],
+      "after_note": "",
+      "done_when": "`TOOLCHAIN_TARGET_TASK:append = \" util-dev googletest-dev\"`, `TOOLCHAIN_HOST_TASK:append = \" nativesdk-ninja\"`; `SDKMACHINE` x86_64 and aarch64; installers (< 2 GiB each) + sha256 + the lock file attached to a GitHub Release; after `. environment-setup-*`, `find_package(util CONFIG REQUIRED)` resolves from `$OECORE_TARGET_SYSROOT`; consumed by C-20",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-11": {
+      "id": "Y-11",
+      "repo": "meta-cxx-cmake",
+      "title": "feat(recipes): app recipe",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "Y-07",
+        "A-11"
+      ],
+      "after_note": "",
+      "done_when": "pinned to the app's first tag; `DEPENDS = \"util spdlog\"`; `bitbake cxx-cmake-app` succeeds",
+      "ops": false,
+      "placeholder": false
+    },
+    "Y-12": {
+      "id": "Y-12",
+      "repo": "meta-cxx-cmake",
+      "title": "docs: README, AGENTS.md, ROADMAP slice",
+      "size": "S (prose)",
+      "phase": 5,
+      "after": [
+        "Y-10"
+      ],
+      "after_note": "",
+      "done_when": "add-the-layer instructions, kas usage, SDK download, how ptest is run on hardware",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-01": {
+      "id": "L-01",
+      "repo": "cxx-cmake",
+      "title": "ops: repository settings, labels, milestones",
+      "size": "ops",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "public; squash-only + delete-branch-on-merge; ruleset targets **`library` and `main`** (PR required, linear history) until L-26 makes `main` the library tree",
+      "ops": true,
+      "placeholder": false
+    },
+    "L-02": {
+      "id": "L-02",
+      "repo": "cxx-cmake",
+      "title": "chore: remove GitLab CI and stale README instructions",
+      "size": "XS",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "no `.gitlab-ci.yml`; README no longer says `cd util`; `grep -ri gitlab` empty",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-03": {
+      "id": "L-03",
+      "repo": "cxx-cmake",
+      "title": "docs: add decision log (docs/DECISIONS.md)",
+      "size": "S (prose)",
+      "phase": 1,
+      "after": [],
+      "after_note": "D15 D21 answered",
+      "done_when": "D0–D21, one-line rationale each, anchors `#d<nn>`; amendments recorded: `ci` stage runs as root (Actions requirement) with `dev` non-root; baseline = Wrynose 6.0.2 (GCC 15.3) with the image deltas per D15.1; exemption variable `UTIL_TEST_EXEMPT`; `BUILD_TESTING` keeps CMake's default ON (recipe controls it); docs OFF by default; git-cliff as the forge-portable escape hatch; no workspace-private references",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-04": {
+      "id": "L-04",
+      "repo": "cxx-cmake",
+      "title": "docs: add design rationale (docs/DESIGN.md)",
+      "size": "M (prose)",
+      "phase": 1,
+      "after": [
+        "L-03"
+      ],
+      "after_note": "",
+      "done_when": "docs/DESIGN.md holds the design rationale, trimmed to what no issue's \"Done when\" already captures",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-05": {
+      "id": "L-05",
+      "repo": "cxx-cmake",
+      "title": "docs: add roadmap (docs/ROADMAP.md)",
+      "size": "S (prose)",
+      "phase": 1,
+      "after": [
+        "L-03"
+      ],
+      "after_note": "",
+      "done_when": "phases + links to milestones/issues; the deferred `target` preset (C-20) and the board-runner lane (D9, no issue until hardware) recorded",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-06": {
+      "id": "L-06",
+      "repo": "cxx-cmake",
+      "title": "chore(license): restore thread-pool upstream MIT notice and add THIRD_PARTY_NOTICES.md",
+      "size": "XS",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "`Copyright (c) 2021-2023 Paul Tsouchlos` + the full MIT notice at the top of `inc/thread_pool.hpp`; dangling `@example mandelbrot/…` removed; notices file: origin URL, upstream tag 0.7.0 / commit, licence, local modifications",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-07": {
+      "id": "L-07",
+      "repo": "cxx-cmake",
+      "title": "style: add .clang-format and .editorconfig",
+      "size": "XS",
+      "phase": 1,
+      "after": [],
+      "after_note": "",
+      "done_when": "config only; no code changes",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-08": {
+      "id": "L-08",
+      "repo": "cxx-cmake",
+      "title": "style: one-time format of first-party files",
+      "size": "mechanical",
+      "phase": 1,
+      "after": [
+        "L-06",
+        "L-07"
+      ],
+      "after_note": "",
+      "done_when": "`git diff -w --stat` shows zero non-whitespace changes on every file; `clang-format --dry-run -Werror` clean on first-party files; vendored `thread_pool.hpp` excluded",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-09": {
+      "id": "L-09",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): require CMake 4.3 and C++23; explicit source lists",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "C-07",
+        "L-08"
+      ],
+      "after_note": "",
+      "done_when": "`cmake_minimum_required(VERSION 4.3)`; `target_compile_features(util PUBLIC cxx_std_23)` replaces the global standard; no `file(GLOB)`; builds in the image; `ctest` still reports 21 tests",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-10": {
+      "id": "L-10",
+      "repo": "cxx-cmake",
+      "title": "ci: minimal build-and-test job in the container image",
+      "size": "XS",
+      "phase": 1,
+      "after": [
+        "C-11",
+        "L-09"
+      ],
+      "after_note": "",
+      "done_when": "`ci.yml` runs configure/build/`ctest` in `ghcr.io/…/ci:X.Y.Z@sha256:…` on PRs to `library` and `main`; green; replaced by L-29",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-11": {
+      "id": "L-11",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): BUILD_TESTING replaces BUILD_TEST; drop dead test branches and the vendored coverage module",
+      "size": "XS + deletion",
+      "phase": 1,
+      "after": [
+        "L-09"
+      ],
+      "after_note": "",
+      "done_when": "`include(CTest)` is the only switch (`BUILD_TESTING` default ON; plain consumers pass `-DBUILD_TESTING=OFF`); `test/CMakeLists.txt` is one `add_subdirectory(unit)`; `TEST_COVERAGE` and `cmake/CodeCoverage.cmake` (743 lines, BSD-3) gone",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-12": {
+      "id": "L-12",
+      "repo": "cxx-cmake",
+      "title": "test: single util_unit_tests binary with CTest labels",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-11"
+      ],
+      "after_note": "",
+      "done_when": "built from an explicit list of `test/unit/src/*.cpp` independent of the library source list; links `GTest::gtest_main` (CONFIG targets); `gtest_discover_tests(... DISCOVERY_MODE PRE_TEST)`; `ctest -L unit` runs every `TEST()`; `ctest -R bloom` selects only Bloom tests",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-13": {
+      "id": "L-13",
+      "repo": "cxx-cmake",
+      "title": "chore(license): SPDX headers and REUSE metadata",
+      "size": "mechanical",
+      "phase": 1,
+      "after": [
+        "L-02",
+        "L-06",
+        "L-08",
+        "L-11"
+      ],
+      "after_note": "",
+      "done_when": "`LICENSES/MIT.txt` + `REUSE.toml` (annotating `inc/thread_pool.hpp` as Paul Tsouchlos / MIT); every first-party file starts with the two SPDX lines; `pipx run reuse lint` passes; vendored body untouched",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-14": {
+      "id": "L-14",
+      "repo": "cxx-cmake",
+      "title": "test: configure-time one-test-file-per-source check over sources and public headers; drop empty translation units",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-12"
+      ],
+      "after_note": "",
+      "done_when": "for every entry of the explicit source list **and** the public header set, `test/unit/src/<stem>.cpp` must exist or `<stem>` is in `UTIL_TEST_EXEMPT`; failure text *\"add test/unit/src/<stem>.cpp or list <stem> in UTIL_TEST_EXEMPT\"*; `src/bit.cpp` and `src/thread_pool.cpp` deleted, their tests still discovered",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-15": {
+      "id": "L-15",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): require OpenSSL and link Crypto privately",
+      "size": "XS",
+      "phase": 1,
+      "after": [
+        "L-09"
+      ],
+      "after_note": "",
+      "done_when": "`find_package(OpenSSL REQUIRED)`; `PRIVATE OpenSSL::Crypto`; no `OpenSSL::SSL`",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-16": {
+      "id": "L-16",
+      "repo": "cxx-cmake",
+      "title": "test: hygiene — stack-allocated Bloom fixtures, timing test removed, sleeps shrunk, stdout silenced",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-12"
+      ],
+      "after_note": "",
+      "done_when": "no `new` in `test/unit/src/bloom.cpp`; `evenTaskLoading` gone (returns as a benchmark in L-55); `ctest -L unit` < 5 s; no output on stdout in passing runs; ASan clean",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-17": {
+      "id": "L-17",
+      "repo": "cxx-cmake",
+      "title": "fix(bloom): remove aliasing UB, the shared mutable buffer, and the init-order mismatch",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-15",
+        "L-16"
+      ],
+      "after_note": "",
+      "done_when": "MD5 kept for now; digest computed into a local `std::array`; indices built with `memcpy` (endianness explicit); `contains()` is `const` with no mutation; members initialised in declaration order; UBSan clean; a TSan test with concurrent `contains()` passes",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-18": {
+      "id": "L-18",
+      "repo": "cxx-cmake",
+      "title": "fix(bloom): migrate MD5 to EVP SHA-256 and drop OpenSSL from the public header",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-17"
+      ],
+      "after_note": "",
+      "done_when": "`inc/bloom.hpp` has no `openssl/` include; `EVP_Digest(..., EVP_sha256(), ...)` in the `.cpp`; `kDigestSize = 32` (max k = 16, documented); no `-Wdeprecated-declarations`; **`TEST(bloom, collision)` — an MD5 collision pair, meaningless under SHA-256 — replaced in the same PR by a hash-independent test (known-negative + false-positive bound over N keys)**; all other tests unchanged and green",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-19": {
+      "id": "L-19",
+      "repo": "cxx-cmake",
+      "title": "feat(bloom): expected-based create() factory replacing the throwing constructor",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-18"
+      ],
+      "after_note": "",
+      "done_when": "`Bloom::create(k) -> std::expected<Bloom, Bloom::Error>`; `k == 0` and `k * kBytesPerHashFunction > kDigestSize` return errors, both tested; `exceptHashFunctionCount` becomes an expected-error test; the default constructor (k = 4) cannot fail and stays; no `throw` in `src/`/`inc/` outside the vendored file",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-20": {
+      "id": "L-20",
+      "repo": "cxx-cmake",
+      "title": "refactor(thread_pool): replace empty catch-all handlers",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-06"
+      ],
+      "after_note": "",
+      "done_when": "zero empty `catch (...)`; each remaining catch documents why or routes to an error callback; the `__cpp_lib_move_only_function` branch removed (C++23 floor) or kept with a one-line \"toolchain-vintage pattern\" comment; both choices recorded in THIRD_PARTY_NOTICES.md",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-21": {
+      "id": "L-21",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): install headers under include/util via FILE_SET",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-09",
+        "L-14"
+      ],
+      "after_note": "",
+      "done_when": "`inc/*.hpp` → `inc/util/` (pure git renames); `target_sources(util PUBLIC FILE_SET HEADERS BASE_DIRS inc FILES …)`; `install(TARGETS util … FILE_SET HEADERS)`; every `#include \"x.hpp\"` in `src/` and `test/` becomes `#include <util/x.hpp>`; `PUBLIC_HEADER` and `install(FILES …)` deleted; `docs/Doxyfile.in` INPUT updated",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-22": {
+      "id": "L-22",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): export to lib/cmake/util with util::util alias, VERSION/SOVERSION and BUILD_SHARED_LIBS",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-21"
+      ],
+      "after_note": "",
+      "done_when": "`cmake/TemplateConfig.cmake.in` → `cmake/utilConfig.cmake.in` with a commented `find_dependency()` example; the three install destinations become `${CMAKE_INSTALL_LIBDIR}/cmake/util`; `add_library(util::util ALIAS util)`; `SOVERSION = ${PROJECT_VERSION_MAJOR}` → `libutil.so.0` + symlink; version file `COMPATIBILITY SameMinorVersion` (switch to `SameMajorVersion` at 1.0); `-DBUILD_SHARED_LIBS=OFF` yields `.a`; dead CPack line removed; **`kas build --target util` (externalsrc on this checkout) passes `do_package_qa` with no `dev-elf`/`dev-so`/`installed-vs-shipped` errors; `util-dev` contains `include/util/*.hpp` + `lib/cmake/util/*.cmake`**",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-23": {
+      "id": "L-23",
+      "repo": "cxx-cmake",
+      "title": "chore(cmake): vendor CPM.cmake v0.43.1",
+      "size": "mechanical",
+      "phase": 1,
+      "after": [
+        "L-13"
+      ],
+      "after_note": "",
+      "done_when": "`cmake/CPM.cmake` byte-identical to the upstream v0.43.1 release asset (SHA256 in the PR body and THIRD_PARTY_NOTICES.md); REUSE.toml covers it as MIT; not yet included; no configure-time download anywhere",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-24": {
+      "id": "L-24",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): declare OpenSSL and GoogleTest through CPM with local-only defaults",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-23",
+        "L-15",
+        "L-12"
+      ],
+      "after_note": "",
+      "done_when": "`include(cmake/CPM.cmake)`; `CPM_USE_LOCAL_PACKAGES=ON` + `CPM_LOCAL_PACKAGES_ONLY=ON` defaults; no bare `find_package` for deps; configure log shows `CPM: Using local package …` for both; `-DCPM_LOCAL_PACKAGES_ONLY=OFF` documented; `kas build --target util` still QA-clean",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-25": {
+      "id": "L-25",
+      "repo": "cxx-cmake",
+      "title": "refactor(bit): move into the util namespace and document the header-only specimen",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-21"
+      ],
+      "after_note": "",
+      "done_when": "`util::bit::min` etc.; tests updated; file-level and function doc comments written, noting `<bit>` alternatives",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-60": {
+      "id": "L-60",
+      "repo": "cxx-cmake",
+      "title": "chore(tools): planning scripts — labels, milestones, issues, project",
+      "size": "S",
+      "phase": 1,
+      "after": [
+        "L-01"
+      ],
+      "after_note": "",
+      "done_when": "`tools/planning/` holds the idempotent `gh` scripts and the backlog data they consume, with a README any agent can follow (D17 condition); re-running them is a no-op on an up-to-date repo",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-26": {
+      "id": "L-26",
+      "repo": "cxx-cmake",
+      "title": "ops: repo split — archive branches, rename, rewrite main, template flag",
+      "size": "ops",
+      "phase": 2,
+      "after": [
+        "L-01",
+        "L-02",
+        "L-03",
+        "L-04",
+        "L-05",
+        "L-06",
+        "L-07",
+        "L-08",
+        "L-09",
+        "L-10",
+        "L-11",
+        "L-12",
+        "L-13",
+        "L-14",
+        "L-15",
+        "L-16",
+        "L-17",
+        "L-18",
+        "L-19",
+        "L-20",
+        "L-21",
+        "L-22",
+        "L-23",
+        "L-24",
+        "L-25"
+      ],
+      "after_note": "",
+      "done_when": "tags `archive/monorepo-main`, `archive/master`, `archive/library` created **before** the force-push; repo renamed `cxx-cmake-library`; `main` = library tree; template flag on; ruleset trimmed to `main`",
+      "ops": true,
+      "placeholder": false
+    },
+    "L-27": {
+      "id": "L-27",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): CMakePresets.json (dev, release)",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-24"
+      ],
+      "after_note": "",
+      "done_when": "`cmake --preset dev && cmake --build --preset dev && ctest --preset dev`; build dir `build/<preset>`; no toolchain file; the `target` preset is deferred to C-20 (in ROADMAP)",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-28": {
+      "id": "L-28",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): sanitizer presets",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-27"
+      ],
+      "after_note": "",
+      "done_when": "`asan-ubsan`, `tsan` presets configure and build",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-29": {
+      "id": "L-29",
+      "repo": "cxx-cmake",
+      "title": "ci: PR gate on presets — gcc Debug+Release, unit tier, JUnit rendering, format check",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-27",
+        "L-26",
+        "L-10"
+      ],
+      "after_note": "",
+      "done_when": "`container: ghcr.io/…/ci:X.Y.Z@sha256:…`; ccache via `CMAKE_CXX_COMPILER_LAUNCHER` + `actions/cache`; `concurrency: cancel-in-progress`; per-test check with annotations (D18); `clang-format --dry-run -Werror` job; replaces L-10",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-30": {
+      "id": "L-30",
+      "repo": "cxx-cmake",
+      "title": "ci: clang leg and plain-distro proof leg",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "clang-22 Debug+Release green; `ubuntu-26.04` runner (preview label; else 24.04 + toolchain PPA) with apt gcc-15 + `pip install cmake==4.3.1` green — this leg must satisfy the full-C++23 floor, not merely today's tree",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-31": {
+      "id": "L-31",
+      "repo": "cxx-cmake",
+      "title": "ci: post-merge full suite (adds arm64 leg)",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "runs on push to `main`; `ubuntu-24.04-arm` leg green",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-32": {
+      "id": "L-32",
+      "repo": "cxx-cmake",
+      "title": "ci: weekly drift cron with auto-issue on failure",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-31"
+      ],
+      "after_note": "",
+      "done_when": "scheduled run; failure opens/updates one issue",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-33": {
+      "id": "L-33",
+      "repo": "cxx-cmake",
+      "title": "build(coverage): coverage preset with an aggregate gcovr run",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-27"
+      ],
+      "after_note": "",
+      "done_when": "`--coverage` on library and tests only (never `PUBLIC`); one gcovr invocation → Cobertura + HTML + Markdown; README notes llvm-cov for Clang forks and a commented-out Codecov step",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-34": {
+      "id": "L-34",
+      "repo": "cxx-cmake",
+      "title": "ci(coverage): thresholds, per-file floor, step summary",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-33",
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "`--fail-under-line`; per-file floor from gcovr JSON fails the job; summary table on every PR",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-35": {
+      "id": "L-35",
+      "repo": "cxx-cmake",
+      "title": "test(functional): installed-package consumer smoke test under CTest, joined to the PR gate",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-22",
+        "L-18",
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "`ctest -L functional` installs to a scratch prefix, configures a consumer with `find_package(util CONFIG REQUIRED)`, builds and runs; gate runs `ctest -L 'unit|functional'`",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-36": {
+      "id": "L-36",
+      "repo": "cxx-cmake",
+      "title": "docs: README as the template manual",
+      "size": "S (prose)",
+      "phase": 2,
+      "after": [
+        "L-27"
+      ],
+      "after_note": "",
+      "done_when": "container-first quick start; presets; `CPM_<NAME>_SOURCE` override, `CPM_SOURCE_CACHE`, `_ROOT`/`CMAKE_PREFIX_PATH` escape hatch; CPM caveats (OPTIONS ignored on local resolve; VERSION is a floor, the pin is the image tag); cross-repo change flow (dependency first → new baseline → pin bump); vendoring lesson pointing at THIRD_PARTY_NOTICES.md; ccache volume in the `docker run` line; healthy configure log; the two manual pins (image digest, CPM.cmake) and how to bump each",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-37": {
+      "id": "L-37",
+      "repo": "cxx-cmake",
+      "title": "docs: README \"using this template\" section",
+      "size": "S (prose)",
+      "phase": 2,
+      "after": [
+        "L-36"
+      ],
+      "after_note": "",
+      "done_when": "rename checklist; what to delete/keep",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-38": {
+      "id": "L-38",
+      "repo": "cxx-cmake",
+      "title": "ci: PR-title lint and release-please",
+      "size": "S",
+      "phase": 2,
+      "after": [
+        "L-26",
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "`amannn/action-semantic-pull-request@v6`; release-please v5 with the generic updater (`x-release-please-version` on the `project()` version line — the tag is derived from the file, never the reverse), PAT as in C-09; merging the first release PR proves CHANGELOG, `project()` version and tag move together",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-39": {
+      "id": "L-39",
+      "repo": "cxx-cmake",
+      "title": "ops: first automated release v0.2.0",
+      "size": "ops",
+      "phase": 2,
+      "after": [
+        "L-38"
+      ],
+      "after_note": "",
+      "done_when": "tag `v0.2.0`, GitHub Release, CHANGELOG — the tag Y-07 and A-02 pin",
+      "ops": true,
+      "placeholder": false
+    },
+    "L-40": {
+      "id": "L-40",
+      "repo": "cxx-cmake",
+      "title": "build(cmake): warnings INTERFACE target, fixes, and -Werror in CI presets",
+      "size": "S",
+      "phase": 3,
+      "after": [
+        "L-27",
+        "L-30"
+      ],
+      "after_note": "",
+      "done_when": "`util_warnings` (`-Wall -Wextra -Wpedantic …`) linked `PRIVATE`, not exported; zero warnings with gcc and clang; CI presets set `WARNINGS_AS_ERRORS=ON`, dev preset does not",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-41": {
+      "id": "L-41",
+      "repo": "cxx-cmake",
+      "title": "style: .clang-tidy with camelCase naming rules",
+      "size": "S",
+      "phase": 3,
+      "after": [],
+      "after_note": "",
+      "done_when": "`readability-identifier-naming` per D11; vendored file excluded",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-42": {
+      "id": "L-42",
+      "repo": "cxx-cmake",
+      "title": "refactor: identifier renames to satisfy clang-tidy",
+      "size": "mechanical",
+      "phase": 3,
+      "after": [
+        "L-41",
+        "L-26",
+        "L-27"
+      ],
+      "after_note": "",
+      "done_when": "`run-clang-tidy` clean (uses the preset's `compile_commands.json`)",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-43": {
+      "id": "L-43",
+      "repo": "cxx-cmake",
+      "title": "ci: clang-tidy job",
+      "size": "XS",
+      "phase": 3,
+      "after": [
+        "L-42",
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "gate job green",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-44": {
+      "id": "L-44",
+      "repo": "cxx-cmake",
+      "title": "ci: sanitizer jobs — asan-ubsan on PR, tsan post-merge",
+      "size": "XS",
+      "phase": 3,
+      "after": [
+        "L-28",
+        "L-31"
+      ],
+      "after_note": "",
+      "done_when": "both presets' tests green in their tiers",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-45": {
+      "id": "L-45",
+      "repo": "cxx-cmake",
+      "title": "docs: doxygen_add_docs with the image's doxygen-awesome-css",
+      "size": "S",
+      "phase": 3,
+      "after": [
+        "L-24",
+        "C-05"
+      ],
+      "after_note": "",
+      "done_when": "`Doxyfile.in` deleted; `BUILD_DOCS` default OFF, not in ALL; theme via `find_path(... /usr/share/doxygen-awesome-css)`; configures in the image with no network",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-46": {
+      "id": "L-46",
+      "repo": "cxx-cmake",
+      "title": "docs: fix headers to pass WARN_AS_ERROR; docs job in the post-merge suite",
+      "size": "S",
+      "phase": 3,
+      "after": [
+        "L-45",
+        "L-31"
+      ],
+      "after_note": "",
+      "done_when": "`cmake --build --target docs` clean with `WARN_AS_ERROR=YES`; post-merge job fails on doc warnings",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-47": {
+      "id": "L-47",
+      "repo": "cxx-cmake",
+      "title": "ci: Pages deploy of docs and coverage HTML",
+      "size": "S",
+      "phase": 3,
+      "after": [
+        "L-46",
+        "L-34"
+      ],
+      "after_note": "",
+      "done_when": "site published from one artifact on push to `main`",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-48": {
+      "id": "L-48",
+      "repo": "cxx-cmake",
+      "title": "chore: dependabot for actions",
+      "size": "XS",
+      "phase": 3,
+      "after": [
+        "L-29"
+      ],
+      "after_note": "",
+      "done_when": "`dependabot.yml` (github-actions); README notes the two manual pins",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-49": {
+      "id": "L-49",
+      "repo": "cxx-cmake",
+      "title": "ops: enable CodeQL default setup",
+      "size": "ops",
+      "phase": 3,
+      "after": [
+        "L-26"
+      ],
+      "after_note": "",
+      "done_when": "CodeQL runs on PRs",
+      "ops": true,
+      "placeholder": false
+    },
+    "L-50": {
+      "id": "L-50",
+      "repo": "cxx-cmake",
+      "title": "docs: AGENTS.md and CLAUDE.md pointer",
+      "size": "S (prose)",
+      "phase": 3,
+      "after": [
+        "L-36"
+      ],
+      "after_note": "",
+      "done_when": "fork-generic per D14; every command is a preset; contains the executable definition of done (`ctest -L 'unit|functional'`, test-file check, coverage floors, format/tidy, docs target)",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-51": {
+      "id": "L-51",
+      "repo": "cxx-cmake",
+      "title": "chore: devcontainer.json pinned to the container image",
+      "size": "XS",
+      "phase": 3,
+      "after": [
+        "C-11"
+      ],
+      "after_note": "",
+      "done_when": "opens in `…/dev:X.Y.Z@sha256:…`; `/work` mount of the parent",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-52": {
+      "id": "L-52",
+      "repo": "cxx-cmake",
+      "title": "chore: pre-commit config (optional)",
+      "size": "XS",
+      "phase": 3,
+      "after": [
+        "L-29",
+        "L-43"
+      ],
+      "after_note": "",
+      "done_when": "format + tidy + commitlint hooks; documented as optional",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-53": {
+      "id": "L-53",
+      "repo": "cxx-cmake",
+      "title": "ci: extract gate, post-merge and weekly into reusable workflow_call workflows",
+      "size": "S",
+      "phase": 3,
+      "after": [
+        "L-32",
+        "L-35"
+      ],
+      "after_note": "",
+      "done_when": "library `ci.yml` is a thin caller of `_gate.yml`/`_full.yml`/`_weekly.yml`; behaviour unchanged; gate green",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-54": {
+      "id": "L-54",
+      "repo": "cxx-cmake",
+      "title": "feat(bench): bench/ with Google Benchmark behind BUILD_BENCH",
+      "size": "S",
+      "phase": 4,
+      "after": [
+        "C-16",
+        "L-27"
+      ],
+      "after_note": "",
+      "done_when": "Release-only; guarded against the coverage preset; `ctest -L performance` lists benchmarks",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-55": {
+      "id": "L-55",
+      "repo": "cxx-cmake",
+      "title": "feat(bench): thread-pool throughput and expected-vs-throw benchmarks",
+      "size": "S",
+      "phase": 4,
+      "after": [
+        "L-54"
+      ],
+      "after_note": "",
+      "done_when": "replaces the deleted timing test; the D5 teaching artifact",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-56": {
+      "id": "L-56",
+      "repo": "cxx-cmake",
+      "title": "ci: weekly and release benchmark runs, perf label, trend dashboard",
+      "size": "S",
+      "phase": 4,
+      "after": [
+        "L-54",
+        "L-32"
+      ],
+      "after_note": "",
+      "done_when": "`github-action-benchmark` publishes to Pages; `perf`-labelled PRs run the bench job; release workflow compares against the previous release's JSON and fails on regression above `alert-threshold`",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-57": {
+      "id": "L-57",
+      "repo": "cxx-cmake",
+      "title": "feat(perf): Tracy harness targets in the performance tier",
+      "size": "S",
+      "phase": 4,
+      "after": [
+        "C-17",
+        "L-54"
+      ],
+      "after_note": "",
+      "done_when": "zero Tracy references in `src/`/`inc/`; harness links `Tracy::TracyClient`",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-58": {
+      "id": "L-58",
+      "repo": "cxx-cmake",
+      "title": "ci: .tracy capture artifacts on weekly runs",
+      "size": "S",
+      "phase": 4,
+      "after": [
+        "L-57"
+      ],
+      "after_note": "",
+      "done_when": "headless `tracy-capture` artifact attached",
+      "ops": false,
+      "placeholder": false
+    },
+    "L-59": {
+      "id": "L-59",
+      "repo": "cxx-cmake",
+      "title": "docs: docs/profiling.md",
+      "size": "S (prose)",
+      "phase": 4,
+      "after": [
+        "L-57"
+      ],
+      "after_note": "",
+      "done_when": "two lanes + the one-paragraph power/board-runner seam (D9)",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-00": {
+      "id": "A-00",
+      "repo": "cxx-cmake-app",
+      "title": "docs: update family links after the library rename",
+      "size": "XS",
+      "phase": 2,
+      "after": [
+        "L-26"
+      ],
+      "after_note": "",
+      "done_when": "README links resolve",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-01": {
+      "id": "A-01",
+      "repo": "cxx-cmake-app",
+      "title": "ops: settings, MIT license + REUSE, labels, milestones",
+      "size": "ops",
+      "phase": 5,
+      "after": [],
+      "after_note": "",
+      "done_when": "as C-01 + `LICENSE`/`LICENSES/`/`REUSE.toml`",
+      "ops": true,
+      "placeholder": false
+    },
+    "A-02": {
+      "id": "A-02",
+      "repo": "cxx-cmake-app",
+      "title": "chore: seed app/ from tag archive/monorepo-main",
+      "size": "mechanical",
+      "phase": 5,
+      "after": [
+        "A-01",
+        "L-39"
+      ],
+      "after_note": "",
+      "done_when": "tree identical to `git show archive/monorepo-main:app/`",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-03": {
+      "id": "A-03",
+      "repo": "cxx-cmake-app",
+      "title": "fix(app): index argv inside the loop",
+      "size": "XS",
+      "phase": 5,
+      "after": [
+        "A-02"
+      ],
+      "after_note": "",
+      "done_when": "`argv[idx]`; runs over all arguments",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-04": {
+      "id": "A-04",
+      "repo": "cxx-cmake-app",
+      "title": "build(cmake): modernise — C++23, CMake 4.3, explicit sources, presets, warnings target, CPM vendored",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-03"
+      ],
+      "after_note": "",
+      "done_when": "mirrors L-09/L-27/L-40/L-23",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-05": {
+      "id": "A-05",
+      "repo": "cxx-cmake-app",
+      "title": "build(cmake): spdlog via CPM",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04",
+        "C-18"
+      ],
+      "after_note": "",
+      "done_when": "resolves locally by default; fetch path documented",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-06": {
+      "id": "A-06",
+      "repo": "cxx-cmake-app",
+      "title": "build(cmake): consume util from the image baseline with the local-checkout override",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04",
+        "C-19"
+      ],
+      "after_note": "",
+      "done_when": "default configure logs `CPM: Using local package util`; `CPM_util_SOURCE=/work/cxx-cmake-library` overrides it",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-07": {
+      "id": "A-07",
+      "repo": "cxx-cmake-app",
+      "title": "test(unit): unit tier and the one-test-file-per-source check",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04"
+      ],
+      "after_note": "",
+      "done_when": "mirrors L-12/L-14",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-08": {
+      "id": "A-08",
+      "repo": "cxx-cmake-app",
+      "title": "style: .clang-format/.clang-tidy/.editorconfig from the library",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04"
+      ],
+      "after_note": "",
+      "done_when": "format + tidy clean",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-09": {
+      "id": "A-09",
+      "repo": "cxx-cmake-app",
+      "title": "feat: ENABLE_TRACY option (default OFF)",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04",
+        "C-17"
+      ],
+      "after_note": "",
+      "done_when": "in-app zones compile out entirely when OFF",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-10": {
+      "id": "A-10",
+      "repo": "cxx-cmake-app",
+      "title": "test(integration): pytest driving the binary under CTest, ruff for Python",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-04",
+        "C-18"
+      ],
+      "after_note": "",
+      "done_when": "`ctest -L integration` runs pytest with `--junitxml`; ruff clean",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-11": {
+      "id": "A-11",
+      "repo": "cxx-cmake-app",
+      "title": "ci: gate, post-merge, weekly via the library's reusable workflows; PR-title lint; release-please",
+      "size": "S",
+      "phase": 5,
+      "after": [
+        "A-10",
+        "L-53"
+      ],
+      "after_note": "",
+      "done_when": "first automated tag",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-12": {
+      "id": "A-12",
+      "repo": "cxx-cmake-app",
+      "title": "docs: README, AGENTS.md, devcontainer, ROADMAP refreshed",
+      "size": "S (prose)",
+      "phase": 5,
+      "after": [
+        "A-11"
+      ],
+      "after_note": "",
+      "done_when": "—",
+      "ops": false,
+      "placeholder": false
+    },
+    "A-13": {
+      "id": "A-13",
+      "repo": "cxx-cmake-app",
+      "title": "build(cmake): target preset for the yocto-flavor container",
+      "size": "XS",
+      "phase": 5,
+      "after": [
+        "C-20"
+      ],
+      "after_note": "",
+      "done_when": "`cmake --preset target` cross-compiles in the SDK shell; preset carries no toolchain file",
+      "ops": false,
+      "placeholder": false
+    },
+    "C-14": {
+      "id": "C-14",
+      "repo": "cxx-cmake-container",
+      "title": "ci: build provenance attestation",
+      "size": "placeholder",
+      "phase": 5,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "*optional* `ci: build provenance attestation` — a signed statement on GHCR that the image was built by this repo's workflow from commit X; useful once someone else consumes the images (`actions/attest-build-provenance@v4`, one step per package)",
+      "ops": false,
+      "placeholder": true
+    },
+    "C-16": {
+      "id": "C-16",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): Google Benchmark",
+      "size": "placeholder",
+      "phase": 4,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "`build(docker): Google Benchmark` (Phase 4, before L-54)",
+      "ops": false,
+      "placeholder": true
+    },
+    "C-17": {
+      "id": "C-17",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): Tracy",
+      "size": "placeholder",
+      "phase": 4,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "`build(docker): Tracy` (Phase 4, before L-57; Phase 5 for A-09)",
+      "ops": false,
+      "placeholder": true
+    },
+    "C-18": {
+      "id": "C-18",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): app-template tooling — spdlog, pytest, ruff",
+      "size": "placeholder",
+      "phase": 5,
+      "after": [
+        "C-10"
+      ],
+      "after_note": "",
+      "done_when": "`build(docker): app-template tooling — spdlog, pytest, ruff` (Phase 5, before A-05, A-10)",
+      "ops": false,
+      "placeholder": true
+    },
+    "C-19": {
+      "id": "C-19",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): install util vX.Y.Z into ci/dev",
+      "size": "placeholder",
+      "phase": 5,
+      "after": [
+        "C-10",
+        "L-39"
+      ],
+      "after_note": "",
+      "done_when": "`build(docker): install util vX.Y.Z into ci/dev` (Phase 5, after L-39, before A-06; Done when `find_package(util CONFIG)` succeeds in-container, version tabled)",
+      "ops": false,
+      "placeholder": true
+    },
+    "C-20": {
+      "id": "C-20",
+      "repo": "cxx-cmake-container",
+      "title": "build(docker): yocto flavor consuming the SDK from Y-10",
+      "size": "placeholder",
+      "phase": 5,
+      "after": [
+        "C-10",
+        "Y-10"
+      ],
+      "after_note": "",
+      "done_when": "`build(docker): yocto flavor consuming the SDK from Y-10` (Phase 5; Done when `cmake --preset target` cross-compiles; SDK-built binaries execute only on hardware via the board lane, never under emulation — D21).",
+      "ops": false,
+      "placeholder": true
+    }
+  }
+}
