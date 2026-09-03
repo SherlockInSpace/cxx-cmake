@@ -1,0 +1,31 @@
+# cxx-cmake editor settings (https://editorconfig.org).
+# Layout for C++ is owned by .clang-format; this file keeps every editor on
+# the same whitespace rules so files match before the formatter runs.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cpp,hpp,h,cmake,txt}]
+indent_style = space
+indent_size = 4
+
+[CMakeLists.txt]
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,md}]
+indent_style = space
+indent_size = 2
+
+# Extension-less YAML configs (clang-format, clang-tidy).
+[{.clang-format,.clang-tidy}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a hard line break in Markdown; do not strip them.
+trim_trailing_whitespace = false
