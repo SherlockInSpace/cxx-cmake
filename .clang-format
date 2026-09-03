@@ -1,0 +1,75 @@
+# cxx-cmake house style (clang-format; target clang-format 22).
+#
+# Layout only. Chosen to match the existing first-party code (inc/, src/,
+# test/unit/src/) so the one-time reformat diff stays small:
+#   - 4-space indent, 100-column limit, LF line endings, newline at EOF
+#   - function/class/struct/enum bodies open their brace on its own line;
+#     control statements (if/for/while/switch) keep the brace on the same line
+#   - namespaces neither indent nor wrap their brace
+#   - left-aligned pointers and references ("const T& x", "T* const p")
+#   - constructor initializers: ") :" then one initializer per line at +4
+#
+# Naming (camelCase house style) is enforced by clang-tidy, not by this file.
+# There is no exclude list in clang-format: vendored code (inc/thread_pool.hpp)
+# is skipped by running the formatter over an explicit first-party file list.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: Latest
+
+# Indentation and line length
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+NamespaceIndentation: None
+LineEnding: LF
+InsertNewlineAtEOF: true
+
+# Braces
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterEnum: true
+  AfterExternBlock: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# Short constructs
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Declarations
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+BreakTemplateDeclarations: Yes
+SpaceAfterTemplateKeyword: false
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: Never
+AlignAfterOpenBracket: DontAlign
+
+# Includes: keep the existing blank-line groups, sort within each group
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
+
+# Comments
+FixNamespaceComments: true
+ReflowComments: true
+...
