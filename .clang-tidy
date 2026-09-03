@@ -1,0 +1,106 @@
+# clang-tidy 22. Diagnostics and naming only; layout is clang-format's job.
+# Naming is the camelCase style from docs/DECISIONS.md. inc/thread_pool.hpp
+# is vendored (THIRD_PARTY_NOTICES.md) and keeps upstream style.
+---
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-c-arrays,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length
+# Disabled checks:
+#   cppcoreguidelines-avoid-magic-numbers / readability-magic-numbers: aliases.
+#     We keep sizing and bit constants inline rather than naming every literal.
+#   cppcoreguidelines-pro-bounds-pointer-arithmetic: fires on every indexed
+#     buffer walk (digests, byte views); std::span is a later refactor.
+#   cppcoreguidelines-owning-memory: needs gsl::owner<>, and GSL is not a dependency.
+#   cppcoreguidelines-avoid-c-arrays / modernize-avoid-c-arrays: aliases (list
+#     both or it stays on). Digest and scratch buffers handed to OpenSSL gain
+#     nothing from std::array.
+#   modernize-use-trailing-return-type: we never adopted `auto f() -> T`.
+#   readability-identifier-length: `x`, `y`, `i` are the right names in small
+#     bit-twiddling helpers.
+
+# Uncomment once the renames have landed.
+# WarningsAsErrors: '*'
+
+# First-party headers only. Update to inc/util/(bit|bloom)\.hpp when they move.
+HeaderFilterRegex: 'inc/(bit|bloom)\.hpp$'
+
+FormatStyle: file
+
+CheckOptions:
+  # Types
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  # Functions
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.MethodCase
+    value: camelBack
+  # Variables and parameters
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+  # Members: `_` suffix on non-public
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.PublicMemberCase
+    value: camelBack
+  # Static non-const members follow the variable rule
+  - key: readability-identifier-naming.ClassMemberCase
+    value: camelBack
+  # Constants: kCamelCase
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstexprVariablePrefix
+    value: k
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: k
+  - key: readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticConstantPrefix
+    value: k
+  # `static const` members would otherwise fall through to VariableCase
+  - key: readability-identifier-naming.ClassConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassConstantPrefix
+    value: k
+  # Namespaces
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  # Enumerators: kCamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantPrefix
+    value: k
+  # Macros
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
