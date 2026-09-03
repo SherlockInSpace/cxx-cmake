@@ -5,7 +5,7 @@
 /************************************ TESTS ***********************************/
 TEST(min, zero)
 {
-    EXPECT_EQ(0, bit::min(0,0));
+    EXPECT_EQ(0, bit::min(0, 0));
 }
 
 TEST(min, negative)
@@ -28,7 +28,7 @@ TEST(min, positive)
 
 TEST(max, zero)
 {
-    EXPECT_EQ(0, bit::max(0,0));
+    EXPECT_EQ(0, bit::max(0, 0));
 }
 
 TEST(max, negative)
