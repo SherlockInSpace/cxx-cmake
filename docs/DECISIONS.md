@@ -127,9 +127,10 @@ every developer installing them. The application template's Python is linted wit
 Versions are semver and the single source is the `project(VERSION ...)` line in `CMakeLists.txt`.
 The version lives in that file rather than being read from the tag because `git describe` at
 configure time breaks under Yocto and in tarball builds.
-We've decided to use the Conventional Commit style and squash-merging. There are advantages to
-rebasing but for now we've decided squash-merge.
-Titles are lint checked and issues references go in the body and footer of the commit messages.
+We've decided to use the Conventional Commit style and rebase merging. Every commit in a pull
+request lands on the branch as it was reviewed, so each commit needs a proper subject, a short body
+and should build on its own. Pull requests stay small: one issue, one to a few commits.
+Every commit is lint checked and issue references go in the commit body.
 `release-please` computes the bump from those subjects and cuts a release from a rolling pull request.
 We chose it over hand-tagged releases because the version line, the changelog and the tag then come
 from one commit.
