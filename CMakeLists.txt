@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 4.3)
 
 ################################################################################
 # Project name and configuration
@@ -27,11 +27,6 @@ include(CTest)
 include(GNUInstallDirs)
 
 ################################################################################
-# Set some configuration options
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-################################################################################
 # List any package dependencies
 find_package(OpenSSL)
 
@@ -39,9 +34,15 @@ find_package(OpenSSL)
 # Create a shared library
 add_library(${PROJECT_NAME} SHARED)
 
+# PUBLIC so consumers compile against the same standard as the headers.
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
 ################################################################################
 # Target include files
-file(GLOB PUBLIC_HEADER_FILES
+# Globbed on purpose: a new header needs no edit here, and the test-file
+# check in test/unit picks it up. CONFIGURE_DEPENDS re-checks the glob at
+# build time, so a new file is seen without a manual re-configure.
+file(GLOB PUBLIC_HEADER_FILES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp
 )
 
@@ -58,7 +59,9 @@ target_include_directories(${PROJECT_NAME}
 
 ################################################################################
 # Target source files
-file(GLOB SOURCE_FILES
+# Globbed like the headers. test/unit builds one test executable per entry,
+# so a source without a matching test file fails at configure.
+file(GLOB SOURCE_FILES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
