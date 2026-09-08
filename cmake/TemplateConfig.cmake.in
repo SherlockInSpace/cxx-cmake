@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
+# SPDX-License-Identifier: MIT
+
 @PACKAGE_INIT@
 
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
