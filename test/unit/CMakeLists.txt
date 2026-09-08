@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.20)
-
 # We use Google Test for our testing
 find_package(GTest REQUIRED)
 include(GoogleTest)

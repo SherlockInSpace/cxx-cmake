@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.20)
-
 # Unit tests
 if (BUILD_TEST MATCHES "UNIT|ALL|ON")
 add_subdirectory(unit)
