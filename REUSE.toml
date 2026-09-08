@@ -1,0 +1,16 @@
+version = 1
+
+# Everything is MIT and ours. Files with a header repeat this; the rest
+# (LICENSE, the Markdown, the dotfiles, docs/Doxyfile.in) get it from here.
+[[annotations]]
+path = ["**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022-2026 Ryan Sherlock"
+SPDX-License-Identifier = "MIT"
+
+# Vendored from DeveloperPaul123/thread-pool, see THIRD_PARTY_NOTICES.md.
+[[annotations]]
+path = ["inc/thread_pool.hpp"]
+precedence = "override"
+SPDX-FileCopyrightText = "2021-2023 Paul Tsouchlos"
+SPDX-License-Identifier = "MIT"
