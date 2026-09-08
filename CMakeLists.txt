@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
+# SPDX-License-Identifier: MIT
+
 cmake_minimum_required(VERSION 4.3)
 
 ################################################################################

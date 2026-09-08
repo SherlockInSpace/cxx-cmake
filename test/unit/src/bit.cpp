@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
+// SPDX-License-Identifier: MIT
+
 #include "bit.hpp"
 
 #include <gtest/gtest.h>
