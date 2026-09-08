@@ -2,9 +2,8 @@
 find_package(GTest REQUIRED)
 include(GoogleTest)
 
-# For every source file in the project there should be a corresponding test file
-# with the same name. This enforces unit test creation. If BUILD_TEST is enabled
-# but the corresponding test file does not exist, then this will fail.
+# Every file in src/ needs a test file of the same name in test/unit/src/.
+# A missing one fails at configure.
 foreach(file ${SOURCE_FILES})
     cmake_path(GET file FILENAME test_file)
     cmake_path(GET test_file STEM test_name)
@@ -23,17 +22,4 @@ foreach(file ${SOURCE_FILES})
     # the build directory will run all the executables and tests.
     # Alternatively they can all be run on the command line.
     gtest_discover_tests(${TEST_EXECUTABLE})
-
-    # Only enable lcov if TEST_COVERAGE is enabled.
-    # NOTE: There is probably a more efficient way of doing this. We can also
-    # debate whether it's more pragmatic to have a single executable with all
-    # source files, or individual ones.
-    if (TEST_COVERAGE)
-      set(GCOVR_ADDITIONAL_ARGS "--print-summary")
-      setup_target_for_coverage_gcovr_xml(
-        NAME ${TEST_EXECUTABLE}_coverage
-        EXECUTABLE ${TEST_EXECUTABLE}
-        EXCLUDE "/usr/include/*" "${PROJECT_SOURCE_DIR}/test/*"
-      )
-    endif()
 endforeach()

@@ -81,12 +81,9 @@ target_link_libraries(${PROJECT_NAME}
 
 ################################################################################
 # Build tests
-if (BUILD_TEST)
-  enable_testing()
-  if (TEST_COVERAGE)
-    include(cmake/CodeCoverage.cmake)
-    append_coverage_compiler_flags_to_target(${PROJECT_NAME})
-  endif()
+# include(CTest) above defines BUILD_TESTING, default ON. Pass
+# -DBUILD_TESTING=OFF when you only need the library.
+if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 

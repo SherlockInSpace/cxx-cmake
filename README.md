@@ -8,10 +8,13 @@ Template for building C++ projects/libraries/applications with CMake
 Configure, build, and run the unit tests from the repository root:
 
 ```
-cmake -S . -B build -G Ninja -DBUILD_TEST=UNIT
+cmake -S . -B build -G Ninja
 cmake --build build
 ctest --test-dir build
 ```
+
+Tests build by default. Pass `-DBUILD_TESTING=OFF` at configure time to build
+only the library.
 
 To install the library, pass `-DCMAKE_INSTALL_PREFIX=<dir>` at configure time
 and run `cmake --install build`.
