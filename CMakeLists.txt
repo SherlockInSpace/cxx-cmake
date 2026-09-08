@@ -28,7 +28,8 @@ include(GNUInstallDirs)
 
 ################################################################################
 # List any package dependencies
-find_package(OpenSSL)
+# REQUIRED so a missing OpenSSL fails at configure instead of at link time.
+find_package(OpenSSL REQUIRED)
 
 ################################################################################
 # Create a shared library
@@ -74,7 +75,8 @@ target_sources(${PROJECT_NAME}
 # Link in depedent libraries
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
-    OpenSSL::SSL
+    # The Bloom filter only uses libcrypto, so we leave libssl out.
+    OpenSSL::Crypto
 )
 
 ################################################################################
