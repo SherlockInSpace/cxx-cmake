@@ -48,30 +48,3 @@ Local modifications relative to upstream `0.5.1`:
 
 `src/thread_pool.cpp` and `test/unit/src/thread_pool.cpp` are local code,
 not vendored.
-
-## CodeCoverage.cmake
-
-| | |
-|---|---|
-| File(s) | `cmake/CodeCoverage.cmake` |
-| Origin | <https://github.com/bilke/cmake-modules> (Lars Bilke), `CodeCoverage.cmake` |
-| Licence | BSD-3-Clause (full text in the file header) |
-| Copyright | Copyright (c) 2012 - 2017, Lars Bilke. All rights reserved. |
-| Derived from | upstream commit `877bab9dd1b17468c5d939cacaa2ad7ba99d1977` (2023-01-05); the last upstream change to the file before vendoring is `70a0b520`, the 2022-09-28 (Sebastian Mueller) `CHANGES` entry |
-
-Local modifications relative to upstream `877bab9d` (first vendored in local
-commit `85e613d`, 2023-06-14, byte-identical apart from the trailing newline):
-
-- In `append_coverage_compiler_flags_to_target`, `target_compile_options(...)`
-  and `target_link_libraries(... gcov)` changed from `PRIVATE` to `PUBLIC`
-  (commits `ce63b4a`, `177692f`) -- the source of the known coverage-flag leak
-  into consumers.
-- `get_target_property(target_type ${PROJECT_NAME} TYPE)` added in the same
-  function (`7cc40b7`).
-- `OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU"` added to the gcov-link condition
-  (`cfec72f`).
-- `--xml-pretty` added to the gcovr XML command (`8b87109`).
-- Trailing newline dropped.
-
-This module is scheduled for removal (the coverage tooling is being replaced);
-delete this entry together with the file.
