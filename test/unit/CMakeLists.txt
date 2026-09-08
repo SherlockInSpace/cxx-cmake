@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
+# SPDX-License-Identifier: MIT
+
 # We use Google Test for our testing
 find_package(GTest REQUIRED)
 include(GoogleTest)
