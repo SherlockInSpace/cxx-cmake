@@ -43,9 +43,9 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 ################################################################################
 # Target include files
-# Globbed on purpose: a new header needs no edit here, and the test-file
-# check in test/unit picks it up. CONFIGURE_DEPENDS re-checks the glob at
-# build time, so a new file is seen without a manual re-configure.
+# Globbed on purpose: a new header needs no edit here. CONFIGURE_DEPENDS
+# re-checks the glob at build time, so a new file is seen without a manual
+# re-configure.
 file(GLOB PUBLIC_HEADER_FILES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp
 )
@@ -63,8 +63,7 @@ target_include_directories(${PROJECT_NAME}
 
 ################################################################################
 # Target source files
-# Globbed like the headers. test/unit builds one test executable per entry,
-# so a source without a matching test file fails at configure.
+# Globbed like the headers.
 file(GLOB SOURCE_FILES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
