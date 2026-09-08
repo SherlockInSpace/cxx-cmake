@@ -1,25 +1,22 @@
-# We use Google Test for our testing
-find_package(GTest REQUIRED)
+# One binary for all the unit tests. We link util once and pick a module
+# with ctest -R.
+find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
-# Every file in src/ needs a test file of the same name in test/unit/src/.
-# A missing one fails at configure.
-foreach(file ${SOURCE_FILES})
-    cmake_path(GET file FILENAME test_file)
-    cmake_path(GET test_file STEM test_name)
+# Our own glob rather than SOURCE_FILES, so a test file needs no matching
+# file in src/.
+file(GLOB UNIT_TEST_FILES CONFIGURE_DEPENDS
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
 
-    # Each source file will generate it's own separate executable.
-    # Conversely, we could change this to a single executable if we wanted
-    # to reduce the number of steps for creating files.
-    set(TEST_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/${test_file})
-    set(TEST_EXECUTABLE ${test_name}_tests)
+add_executable(util_unit_tests ${UNIT_TEST_FILES})
+target_link_libraries(util_unit_tests
+  PRIVATE util GTest::gtest_main
+)
 
-    add_executable(${TEST_EXECUTABLE} ${TEST_SOURCE})
-    target_link_libraries(${TEST_EXECUTABLE}
-        PRIVATE ${PROJECT_NAME} GTest::GTest GTest::Main)
-
-    # This will discover all tests for each executable, so running "ctest" in
-    # the build directory will run all the executables and tests.
-    # Alternatively they can all be run on the command line.
-    gtest_discover_tests(${TEST_EXECUTABLE})
-endforeach()
+# PRE_TEST lists the tests when ctest runs, not at build time, so a cross
+# build never has to execute the binary on the build host.
+gtest_discover_tests(util_unit_tests
+  DISCOVERY_MODE PRE_TEST
+  PROPERTIES LABELS unit
+)
