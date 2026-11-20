@@ -14,3 +14,10 @@ path = ["inc/util/thread_pool.hpp"]
 precedence = "override"
 SPDX-FileCopyrightText = "2021-2023 Paul Tsouchlos"
 SPDX-License-Identifier = "MIT"
+
+# Vendored from cpm-cmake/CPM.cmake v0.43.1, see THIRD_PARTY_NOTICES.md.
+[[annotations]]
+path = ["cmake/CPM.cmake"]
+precedence = "override"
+SPDX-FileCopyrightText = "2019-2023 Lars Melchior and contributors"
+SPDX-License-Identifier = "MIT"
