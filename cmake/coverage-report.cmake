@@ -6,10 +6,12 @@
 #   2. run the unit tests,
 #   3. run gcovr once for Cobertura XML, HTML, JSON and a JSON summary,
 #   4. write a Markdown summary from the JSON summary (gcovr 7 has no
-#      Markdown output of its own).
-# Inputs: SOURCE_DIR, BINARY_DIR, GCOVR, CTEST.
+#      Markdown output of its own),
+#   5. fail if total line coverage is under FAIL_UNDER_LINE or any one file
+#      is under FILE_FLOOR (both percentages).
+# Inputs: SOURCE_DIR, BINARY_DIR, GCOVR, CTEST, FAIL_UNDER_LINE, FILE_FLOOR.
 
-foreach(var SOURCE_DIR BINARY_DIR GCOVR CTEST)
+foreach(var SOURCE_DIR BINARY_DIR GCOVR CTEST FAIL_UNDER_LINE FILE_FLOOR)
   if(NOT DEFINED ${var})
     message(FATAL_ERROR "coverage-report.cmake needs -D${var}=...")
   endif()
@@ -29,7 +31,8 @@ execute_process(
   COMMAND_ERROR_IS_FATAL ANY)
 
 # Library code only: src/ and the public headers, which includes the vendored
-# thread pool because the unit tests exercise it.
+# thread pool because the unit tests exercise it. The total threshold is
+# checked after the reports are written, so a failing run still leaves them.
 execute_process(
   COMMAND "${GCOVR}"
     --root "${SOURCE_DIR}"
@@ -80,3 +83,36 @@ string(APPEND md "| **Total** | **${lines}** | **${functions}** | **${branches}*
 file(WRITE "${out}/summary.md" "${md}")
 
 message(STATUS "Coverage reports in ${out}: cobertura.xml, html/index.html, summary.md")
+
+# Thresholds, in tenths of a percent so CMake's integer maths can compare them.
+function(tenths json kind var)
+  string(JSON covered GET "${json}" "${kind}_covered")
+  string(JSON total GET "${json}" "${kind}_total")
+  if(total EQUAL 0)
+    set(${var} 1000 PARENT_SCOPE)
+  else()
+    math(EXPR value "(${covered} * 1000) / ${total}")
+    set(${var} ${value} PARENT_SCOPE)
+  endif()
+endfunction()
+
+math(EXPR total_floor "${FAIL_UNDER_LINE} * 10")
+math(EXPR file_floor "${FILE_FLOOR} * 10")
+set(failures "")
+tenths("${summary}" line total_lines)
+if(total_lines LESS total_floor)
+  list(APPEND failures "total line coverage is under ${FAIL_UNDER_LINE}%")
+endif()
+foreach(i RANGE ${last})
+  string(JSON file GET "${summary}" files ${i})
+  string(JSON name GET "${file}" filename)
+  tenths("${file}" line file_lines)
+  if(file_lines LESS file_floor)
+    list(APPEND failures "${name} line coverage is under the ${FILE_FLOOR}% per-file floor")
+  endif()
+endforeach()
+if(failures)
+  list(JOIN failures "\n  " text)
+  message(FATAL_ERROR "Coverage check failed:\n  ${text}\nSee ${out}/html/index.html")
+endif()
+message(STATUS "Coverage meets the floors: ${FAIL_UNDER_LINE}% total, ${FILE_FLOOR}% per file")

@@ -146,6 +146,10 @@ target_link_libraries(${PROJECT_NAME}
 # nothing that links util is instrumented by accident. The coverage preset
 # turns it on; the coverage target runs the tests and then gcovr once.
 option(UTIL_COVERAGE "Instrument util and its unit tests for gcov coverage" OFF)
+set(UTIL_COVERAGE_FAIL_UNDER_LINE 90 CACHE STRING
+  "The coverage target fails if total line coverage is under this percentage")
+set(UTIL_COVERAGE_FILE_FLOOR 80 CACHE STRING
+  "The coverage target fails if any one file's line coverage is under this percentage")
 
 if(UTIL_COVERAGE)
   if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -199,6 +203,8 @@ if(UTIL_COVERAGE)
       -DBINARY_DIR=${PROJECT_BINARY_DIR}
       -DGCOVR=${GCOVR_EXECUTABLE}
       -DCTEST=${CMAKE_CTEST_COMMAND}
+      -DFAIL_UNDER_LINE=${UTIL_COVERAGE_FAIL_UNDER_LINE}
+      -DFILE_FLOOR=${UTIL_COVERAGE_FILE_FLOOR}
       -P ${PROJECT_SOURCE_DIR}/cmake/coverage-report.cmake
     DEPENDS util_unit_tests
     COMMENT "Running the unit tests and gcovr"
