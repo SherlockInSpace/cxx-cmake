@@ -35,12 +35,12 @@ void Bloom::insert(const std::string& object)
 {
     const Digest digest = hash(object);
     for (size_t idx = 0; idx < hashFunctionCount_; idx++) {
-        bloomfilterStore_[bitIndex(digest, idx)] = true;
+        bloomfilterStore_.set(bitIndex(digest, idx));
     }
     ++objectCount_;
 }
 
-void Bloom::clear(void)
+void Bloom::clear()
 {
     bloomfilterStore_.reset();
     objectCount_ = 0;
@@ -50,13 +50,14 @@ bool Bloom::contains(const std::string& object) const
 {
     const Digest digest = hash(object);
     for (size_t idx = 0; idx < hashFunctionCount_; idx++) {
-        if (!bloomfilterStore_[bitIndex(digest, idx)])
+        if (!bloomfilterStore_.test(bitIndex(digest, idx))) {
             return false;
+        }
     }
     return true;
 }
 
-size_t Bloom::objectCount(void) const
+size_t Bloom::objectCount() const
 {
     return objectCount_;
 }
@@ -86,7 +87,7 @@ std::uint16_t Bloom::bitIndex(const Digest& digest, size_t hashFunction)
     // aliasing. The bytes are read as little-endian so a filter means the same
     // bits on every host.
     std::uint16_t index = 0;
-    std::memcpy(&index, digest.data() + hashFunction * kBytesPerHashFunction, sizeof(index));
+    std::memcpy(&index, digest.data() + (hashFunction * kBytesPerHashFunction), sizeof(index));
     if constexpr (std::endian::native == std::endian::big) {
         index = std::byteswap(index);
     }
