@@ -88,6 +88,15 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "bench",
+      "inherits": "base",
+      "displayName": "Benchmarks (Release)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_BENCH": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -125,6 +134,10 @@
     {
       "name": "ci-release",
       "configurePreset": "ci-release"
+    },
+    {
+      "name": "bench",
+      "configurePreset": "bench"
     }
   ],
   "testPresets": [
@@ -186,6 +199,20 @@
       "output": {
         "outputOnFailure": true,
         "outputJUnitFile": "junit.xml"
+      }
+    },
+    {
+      "name": "bench",
+      "inherits": "base",
+      "configurePreset": "bench",
+      "filter": {
+        "include": {
+          "label": "performance"
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "jobs": 1
       }
     }
   ],
@@ -306,6 +333,23 @@
         {
           "type": "test",
           "name": "ci-release"
+        }
+      ]
+    },
+    {
+      "name": "bench",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "bench"
+        },
+        {
+          "type": "build",
+          "name": "bench"
+        },
+        {
+          "type": "test",
+          "name": "bench"
         }
       ]
     }
