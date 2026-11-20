@@ -11,11 +11,29 @@
 #include <vector>
 
 /************************************ TESTS ***********************************/
-TEST(bloom, exceptHashFunctionCount)
+TEST(bloom, createRejectsZeroHashFunctions)
 {
-    EXPECT_THROW(util::Bloom(0), std::invalid_argument);
-    EXPECT_NO_THROW(util::Bloom(16));
-    EXPECT_THROW(util::Bloom(17), std::invalid_argument);
+    const auto bloomFilter = util::Bloom::create(0);
+    ASSERT_FALSE(bloomFilter.has_value());
+    EXPECT_EQ(util::Bloom::Error::kNoHashFunctions, bloomFilter.error());
+}
+
+TEST(bloom, createRejectsTooManyHashFunctions)
+{
+    const auto bloomFilter = util::Bloom::create(17);
+    ASSERT_FALSE(bloomFilter.has_value());
+    EXPECT_EQ(util::Bloom::Error::kTooManyHashFunctions, bloomFilter.error());
+}
+
+TEST(bloom, createAcceptsEveryValidCount)
+{
+    for (std::size_t count = 1; count <= 16; ++count) {
+        auto bloomFilter = util::Bloom::create(count);
+        ASSERT_TRUE(bloomFilter.has_value()) << "count " << count;
+        bloomFilter->insert("Hello");
+        EXPECT_TRUE(bloomFilter->contains("Hello")) << "count " << count;
+        EXPECT_FALSE(bloomFilter->contains("World")) << "count " << count;
+    }
 }
 
 TEST(bloom, createInsertCountClear)
