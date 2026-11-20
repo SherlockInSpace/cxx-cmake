@@ -16,6 +16,10 @@ build and `release` a Release build; each lives in `build/<preset>` and writes
 `compile_commands.json`. Machine-specific settings go in a
 `CMakeUserPresets.json`, which git ignores.
 
+`asan-ubsan` (AddressSanitizer with UndefinedBehaviorSanitizer) and `tsan`
+(ThreadSanitizer) are Debug builds with the sanitizer on everything; their test
+presets stop at the first report.
+
 Tests build by default. Pass `-DBUILD_TESTING=OFF` at configure time to build
 only the library.
 
