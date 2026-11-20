@@ -42,35 +42,26 @@ add_library(${PROJECT_NAME} SHARED)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 ################################################################################
-# Target include files
-# Globbed on purpose: a new header needs no edit here, and the test-file
-# check in test/unit picks it up. CONFIGURE_DEPENDS re-checks the glob at
-# build time, so a new file is seen without a manual re-configure.
+# Target sources and public headers
+# Globbed on purpose: a new file needs no edit here, and the test-file check
+# in test/unit picks it up. CONFIGURE_DEPENDS re-checks the globs at build
+# time, so a new file is seen without a manual re-configure.
 file(GLOB PUBLIC_HEADER_FILES CONFIGURE_DEPENDS
-  ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/inc/util/*.hpp
 )
-
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
-    # where the library itself will look for its internal headers
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
-  PUBLIC
-    # where top-level project will look for the library's public headers
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
-    # where external projects will look for the library's public headers
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
-################################################################################
-# Target source files
-# Globbed like the headers, and checked the same way by test/unit.
 file(GLOB SOURCE_FILES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
+# The HEADERS file set puts inc/ on the include path in-tree and
+# include/ once installed, so everyone writes #include <util/x.hpp>.
 target_sources(${PROJECT_NAME}
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    FILES ${PUBLIC_HEADER_FILES}
   PRIVATE
-    $<BUILD_INTERFACE:${SOURCE_FILES}>
+    ${SOURCE_FILES}
 )
 
 ################################################################################
@@ -98,7 +89,7 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    FILE_SET HEADERS
 )
 
 # Write out the information to the *Target.cmake file
@@ -107,10 +98,6 @@ install(
   FILE ${PROJECT_NAME}Targets.cmake
   NAMESPACE ${PROJECT_NAME}::
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
-
-# Copy public headers to destination
-install(FILES ${PUBLIC_HEADER_FILES}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ################################################################################
 # Write out the config version information

@@ -13,14 +13,14 @@ The rest of the repository is licensed under the terms in [LICENSE](LICENSE).
 
 | | |
 |---|---|
-| File(s) | `inc/thread_pool.hpp` |
+| File(s) | `inc/util/thread_pool.hpp` |
 | Origin | <https://github.com/DeveloperPaul123/thread-pool> |
-| Licence | MIT (full text reproduced at the top of `inc/thread_pool.hpp`) |
+| Licence | MIT (full text reproduced at the top of `inc/util/thread_pool.hpp`) |
 | Copyright | Copyright (c) 2021-2023 Paul Tsouchlos (copyright line taken from upstream `main` at time of writing; the `0.5.1` LICENSE reads 2021) |
 | Derived from | tag `0.5.1` (commit `80b3c8b40e881a3b4f88599e873321a46d66f232`, 2022-10-20) |
 | Upstream at time of writing (2026-09-03) | latest tag `0.7.0` (commit `2417b702026b56303486dc1442fed9658990185f`, 2025-01-01); `main` tip `0de593cd446ac1ee5428910f38f522c0549bbf26` (2026-03-05) |
 
-`inc/thread_pool.hpp` combines two upstream headers,
+`inc/util/thread_pool.hpp` combines two upstream headers,
 `include/thread_pool/thread_pool.h` and `include/thread_pool/thread_safe_queue.h`.
 It was vendored on 2022-12-02 (commit `a09e5c5`) and does not carry an upstream version marker, so
 the base version was identified by diffing it against `thread_pool.h` at every

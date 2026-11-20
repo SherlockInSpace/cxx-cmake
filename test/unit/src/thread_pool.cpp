@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
 // SPDX-License-Identifier: MIT
 
-#include "thread_pool.hpp"
+#include <util/thread_pool.hpp>
 
 #include <gtest/gtest.h>
 

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022-2026 Ryan Sherlock
 // SPDX-License-Identifier: MIT
 
-#include "bloom.hpp"
+#include <util/bloom.hpp>
 
 #include <openssl/evp.h>
 

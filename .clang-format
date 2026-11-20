@@ -10,7 +10,7 @@
 #   - constructor initializers: ") :" then one initializer per line at +4
 #
 # Naming (camelCase house style) is enforced by clang-tidy, not by this file.
-# There is no exclude list in clang-format: vendored code (inc/thread_pool.hpp)
+# There is no exclude list in clang-format: vendored code (inc/util/thread_pool.hpp)
 # is skipped by running the formatter over an explicit first-party file list.
 ---
 Language: Cpp
