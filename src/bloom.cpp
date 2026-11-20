@@ -3,12 +3,15 @@
 
 #include "bloom.hpp"
 
+#include <bit>
+#include <cstring>
+#include <stdexcept>
+
 using namespace util;
 
 Bloom::Bloom(size_t hashFunctionCount) :
-    hashFunctionCount_(hashFunctionCount),
     objectCount_(0),
-    md5HashResultBuffer_(std::make_unique<unsigned char[]>(kMD5ResultSize))
+    hashFunctionCount_(hashFunctionCount)
 {
     if (0 == hashFunctionCount) {
         throw std::invalid_argument("Bloomfilter could not be initialized: "
@@ -25,13 +28,9 @@ Bloom::Bloom(size_t hashFunctionCount) :
 
 void Bloom::insert(const std::string& object)
 {
-    hash(object);
-    const uint16_t* const objectHashes =
-        reinterpret_cast<const uint16_t* const>(md5HashResultBuffer_.get());
-
+    const Digest digest = hash(object);
     for (size_t idx = 0; idx < hashFunctionCount_; idx++) {
-        const uint16_t hashIndex = objectHashes[idx];
-        bloomfilterStore_[hashIndex] = true;
+        bloomfilterStore_[bitIndex(digest, idx)] = true;
     }
     ++objectCount_;
 }
@@ -44,13 +43,9 @@ void Bloom::clear(void)
 
 bool Bloom::contains(const std::string& object) const
 {
-    hash(object);
-    const uint16_t* const objectHashes =
-        reinterpret_cast<const uint16_t* const>(md5HashResultBuffer_.get());
-
+    const Digest digest = hash(object);
     for (size_t idx = 0; idx < hashFunctionCount_; idx++) {
-        const uint16_t hashIndex = objectHashes[idx];
-        if (!bloomfilterStore_[hashIndex])
+        if (!bloomfilterStore_[bitIndex(digest, idx)])
             return false;
     }
     return true;
@@ -66,9 +61,23 @@ bool Bloom::empty() const
     return 0 == objectCount();
 }
 
-void Bloom::hash(const std::string& object) const
+Bloom::Digest Bloom::hash(const std::string& object)
 {
-    const unsigned char* const md5InputVal = reinterpret_cast<const unsigned char*>(object.data());
-    const size_t md5InputLength = object.length();
-    MD5(md5InputVal, md5InputLength, md5HashResultBuffer_.get());
+    Digest digest{};
+    const auto* const md5InputVal = reinterpret_cast<const unsigned char*>(object.data());
+    MD5(md5InputVal, object.length(), digest.data());
+    return digest;
+}
+
+std::uint16_t Bloom::bitIndex(const Digest& digest, size_t hashFunction)
+{
+    // memcpy rather than a uint16_t* into the byte array, which broke strict
+    // aliasing. The bytes are read as little-endian so a filter means the same
+    // bits on every host.
+    std::uint16_t index = 0;
+    std::memcpy(&index, digest.data() + hashFunction * kBytesPerHashFunction, sizeof(index));
+    if constexpr (std::endian::native == std::endian::big) {
+        index = std::byteswap(index);
+    }
+    return index;
 }
