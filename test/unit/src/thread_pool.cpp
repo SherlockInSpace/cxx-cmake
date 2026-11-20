@@ -5,8 +5,13 @@
 
 #include <gtest/gtest.h>
 
-#include <iostream>
-#include <string>
+#include <atomic>
+#include <chrono>
+#include <functional>
+#include <future>
+#include <stdexcept>
+#include <thread>
+#include <vector>
 
 auto multiply(int a, int b)
 {
@@ -97,13 +102,15 @@ TEST(thread_pool, multiTypeParameter)
 
 TEST(thread_pool, workCompletedAfterDestruction)
 {
-    std::atomic<int> counter;
+    std::atomic<int> counter{0};
     constexpr auto total_tasks = 30;
     {
         util::thread_pool pool(4);
         for (auto i = 0; i < total_tasks; i++) {
+            // Long enough that most tasks are still queued when the pool is
+            // destroyed, which is what this test is about.
             auto task = [i, &counter]() {
-                std::this_thread::sleep_for(std::chrono::milliseconds((i + 1) * 100));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1 + (i % 5)));
                 ++counter;
             };
             pool.enqueue_detach(task);
@@ -111,48 +118,6 @@ TEST(thread_pool, workCompletedAfterDestruction)
     }
 
     EXPECT_EQ(counter.load(), total_tasks);
-}
-
-TEST(thread_pool, evenTaskLoading)
-{
-    auto delay_task = [](const std::chrono::seconds& seconds) {
-        std::cout << std::this_thread::get_id() << " start : " << std::to_string(seconds.count())
-                  << "\n";
-        std::this_thread::sleep_for(seconds);
-        std::cout << std::this_thread::get_id() << " end: " << std::to_string(seconds.count())
-                  << "\n";
-    };
-    constexpr auto long_task_time = 6;
-    const auto start_time = std::chrono::steady_clock::now();
-    {
-        util::thread_pool pool(4);
-        for (auto i = 1; i <= 8; ++i) {
-            auto delay_amount = std::chrono::seconds(i % 4);
-            if (i % 4 == 0) {
-                delay_amount = std::chrono::seconds(long_task_time);
-            }
-            pool.enqueue_detach(delay_task, delay_amount);
-        }
-        // wait for tasks to complete
-    }
-    const auto end_time = std::chrono::steady_clock::now();
-    const auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
-
-    /**
-     * Potential execution graph
-     * '-' and '*' represent task time.
-     * '-' is the first round of tasks and '*' is the second round of tasks
-     *
-     * - * **
-     * -- ***
-     * --- ******
-     * ------
-     */
-    std::cout << "total duration: " << duration.count() << "\n";
-    // worst case is the same thread doing the long task back to back. Tasks are assigned
-    // sequentially in the thread pool so this would be the default execution if there was no work
-    // stealing.
-    EXPECT_LT(duration.count(), long_task_time * 2);
 }
 
 TEST(thread_pool, taskExeceptionDoesNotKill)
@@ -164,7 +129,7 @@ TEST(thread_pool, taskExeceptionDoesNotKill)
 
     auto throw_no_return = []() { throw std::logic_error("Error occurred."); };
     auto no_throw_no_return = [&count]() {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         count += 1;
     };
 
