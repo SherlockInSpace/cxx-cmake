@@ -3,7 +3,10 @@
 
 #include "bloom.hpp"
 
+#include <openssl/evp.h>
+
 #include <bit>
+#include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 
@@ -18,11 +21,11 @@ Bloom::Bloom(size_t hashFunctionCount) :
                                     "hashFunctionCount must be larger than 0!");
     }
 
-    if (kMD5ResultSize < hashFunctionCount * kBytesPerHashFunction) {
+    if (kDigestSize < hashFunctionCount * kBytesPerHashFunction) {
         throw std::invalid_argument("Bloomfilter could not be initialized: "
                                     "hashFunctionCount too large! "
                                     "hashFunctionCount *  kBytesPerHashFunction must be smaller or "
-                                    "equal to kMD5ResultSize");
+                                    "equal to kDigestSize");
     }
 }
 
@@ -64,8 +67,14 @@ bool Bloom::empty() const
 Bloom::Digest Bloom::hash(const std::string& object)
 {
     Digest digest{};
-    const auto* const md5InputVal = reinterpret_cast<const unsigned char*>(object.data());
-    MD5(md5InputVal, object.length(), digest.data());
+    unsigned int digestLength = 0;
+    // EVP_Digest only fails when OpenSSL cannot allocate its context, and an
+    // insert or lookup has nothing useful to return then.
+    if (EVP_Digest(object.data(), object.size(), digest.data(), &digestLength, EVP_sha256(),
+            nullptr) != 1 ||
+        digestLength != kDigestSize) {
+        std::abort();
+    }
     return digest;
 }
 
