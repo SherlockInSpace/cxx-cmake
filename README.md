@@ -21,6 +21,12 @@ GoogleTest cases, and `-L functional` installs `util` into a scratch prefix unde
 the build directory, then configures, builds and runs a separate project that
 uses it through `find_package(util CONFIG REQUIRED)`. Without `-L` both run.
 
+Warning flags live on the `util_warnings` target, which `util` and its tests
+link privately, so they never reach a consumer. The `ci-debug` and `ci-release`
+presets add `-Werror` (`UTIL_WARNINGS_AS_ERRORS=ON`) and write `junit.xml` into
+their build directory; `dev` leaves warnings as warnings so a newer compiler
+does not stop a local build.
+
 `asan-ubsan` (AddressSanitizer with UndefinedBehaviorSanitizer) and `tsan`
 (ThreadSanitizer) are Debug builds with the sanitizer on everything; their test
 presets stop at the first report.

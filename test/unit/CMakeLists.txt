@@ -47,7 +47,7 @@ file(GLOB UNIT_TEST_FILES CONFIGURE_DEPENDS
 
 add_executable(util_unit_tests ${UNIT_TEST_FILES})
 target_link_libraries(util_unit_tests
-  PRIVATE util::util GTest::gtest_main
+  PRIVATE util::util util_warnings GTest::gtest_main
 )
 
 if(UTIL_COVERAGE)
