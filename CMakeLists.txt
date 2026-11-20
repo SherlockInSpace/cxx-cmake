@@ -30,9 +30,32 @@ include(CTest)
 include(GNUInstallDirs)
 
 ################################################################################
-# List any package dependencies
-# REQUIRED so a missing OpenSSL fails at configure instead of at link time.
-find_package(OpenSSL REQUIRED)
+# Dependencies
+# Every dependency is a CPMAddPackage. By default each one resolves through
+# find_package, from the container image or the Yocto sysroot, and configure
+# fails if it is missing: nothing is downloaded. -DCPM_LOCAL_PACKAGES_ONLY=OFF
+# lets CPM fetch what find_package cannot find, and -DCPM_<Name>_SOURCE=/path
+# builds one dependency from a local checkout. VERSION is the minimum the code
+# needs, not a pin; the container tag is the pin. docs/DECISIONS.md has the
+# caveats, and the configure log says what resolved.
+option(CPM_USE_LOCAL_PACKAGES "Try find_package before downloading" ON)
+option(CPM_LOCAL_PACKAGES_ONLY "Only use find_package, never download" ON)
+include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
+
+# CPM reports a package missing under CPM_LOCAL_PACKAGES_ONLY with SEND_ERROR,
+# which does not stop configure, and then downloads it anyway. With FetchContent
+# fully disconnected that download cannot happen, so local-only means no network.
+if(CPM_LOCAL_PACKAGES_ONLY)
+  set(FETCHCONTENT_FULLY_DISCONNECTED ON)
+endif()
+
+# libcrypto only. OpenSSL is not a CMake project, so it always comes from
+# find_package (point OPENSSL_ROOT_DIR at a build if it is somewhere unusual).
+CPMAddPackage(
+  NAME OpenSSL
+  VERSION 3.0.0
+  FIND_PACKAGE_ARGUMENTS "COMPONENTS Crypto"
+)
 
 ################################################################################
 # Create the library
