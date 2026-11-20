@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <openssl/md5.h>
-
 #include <array>
 #include <bitset>
 #include <cstddef>
@@ -21,7 +19,7 @@ public:
     /**
      * @brief Construct a new Bloom filter object.
      *
-     * @param[in] hashFunctionCount The size of the hash function.
+     * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
      */
     Bloom(size_t = 4);
 
@@ -64,8 +62,9 @@ public:
 
 private:
     /******************************* Statics **********************************/
-    ///< The MD5 hash function size in bytes.
-    static constexpr size_t kMD5ResultSize = 16;
+    ///< The SHA-256 digest size in bytes. Each hash function takes
+    ///< kBytesPerHashFunction of it, so a filter has at most 16 hash functions.
+    static constexpr size_t kDigestSize = 32;
     ///< The store size of the Bloom filter in bits.
     static constexpr size_t kBloomFilterStoreSize = 65536;
     ///< The bytes per hash function to use.
@@ -78,10 +77,12 @@ private:
     /******************************* Methods **********************************/
 
     ///< The digest of one object.
-    using Digest = std::array<unsigned char, kMD5ResultSize>;
+    using Digest = std::array<unsigned char, kDigestSize>;
 
     /**
-     * @brief Hash an object. Touches no member, so concurrent calls are safe.
+     * @brief Hash an object with SHA-256. Touches no member, so concurrent
+     * calls are safe. Aborts if OpenSSL cannot compute the digest, which only
+     * happens when it cannot allocate.
      *
      * @param[in] object The object to hash.
      * @return The object's digest.
