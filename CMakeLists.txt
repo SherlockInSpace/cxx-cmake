@@ -35,8 +35,25 @@ include(GNUInstallDirs)
 find_package(OpenSSL REQUIRED)
 
 ################################################################################
-# Create a shared library
-add_library(${PROJECT_NAME} SHARED)
+# Create the library
+# Shared unless -DBUILD_SHARED_LIBS=OFF. Only declared when util is the
+# top-level project, so pulling util into another build does not change
+# that build's default for its own libraries.
+if(PROJECT_IS_TOP_LEVEL)
+  option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+endif()
+
+add_library(${PROJECT_NAME})
+# The same name consumers get from find_package, so in-tree code and
+# add_subdirectory users link util::util too.
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+# libutil.so -> libutil.so.<major> -> libutil.so.<version>. The SONAME is the
+# major version, which is what changes when the ABI breaks.
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+)
 
 # PUBLIC so consumers compile against the same standard as the headers.
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
@@ -82,7 +99,9 @@ endif()
 
 ################################################################################
 # INSTALL SECTION
-# Set the installation locations for the library
+# Every CMake package file goes to <libdir>/cmake/util, next to the library.
+set(UTIL_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
 install(
     TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}_Targets
@@ -97,28 +116,27 @@ install(
   EXPORT ${PROJECT_NAME}_Targets
   FILE ${PROJECT_NAME}Targets.cmake
   NAMESPACE ${PROJECT_NAME}::
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+  DESTINATION ${UTIL_INSTALL_CMAKEDIR})
 
 ################################################################################
 # Write out the config version information
+# Before 1.0 a minor bump may break the API, so only the same minor version
+# is compatible. Switch to SameMajorVersion at 1.0.
 write_basic_package_version_file(
-  "${PROJECT_NAME}ConfigVersion.cmake"
+  "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion)
+  COMPATIBILITY SameMinorVersion)
 
 # Create the package configuration
 configure_package_config_file(
-  "${PROJECT_SOURCE_DIR}/cmake/TemplateConfig.cmake.in"
+  "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+  INSTALL_DESTINATION ${UTIL_INSTALL_CMAKEDIR})
 
 # Install the package and version config
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
-
-# Add in the LICENSE
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+        DESTINATION ${UTIL_INSTALL_CMAKEDIR})
 
 ################################################################################
 # Build Documentation
