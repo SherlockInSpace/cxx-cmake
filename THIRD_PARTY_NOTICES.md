@@ -45,6 +45,17 @@ Local modifications relative to upstream `0.5.1`:
 - The upstream `LICENSE` text is reproduced as a comment block above
   `#pragma once`, and the dangling `@example mandelbrot/source/main.cpp`
   doc block (an upstream example not present in this repository) is removed.
+- Exception handling (issue #20): the empty `catch (...)` around each worker's
+  own task is removed, because `enqueue()` and `enqueue_detach()` already catch
+  everything inside the task (upstream never had one on the stolen-task path).
+  The empty `catch (...)` around starting each thread now stops and joins the
+  workers already running and rethrows, instead of leaving a pool with
+  missing workers. The `catch (...)` in `enqueue_detach()` stays, with a
+  comment: a detached task has nowhere to report an exception.
+- The `__cpp_lib_move_only_function` / `std::function` fallback is kept, with
+  a one-line "toolchain-vintage pattern" comment, rather than removed for the
+  C++23 floor: it costs nothing where `std::move_only_function` exists and
+  keeps standard libraries that lack it building.
 
 `src/thread_pool.cpp` and `test/unit/src/thread_pool.cpp` are local code,
 not vendored.

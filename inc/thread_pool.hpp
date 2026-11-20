@@ -51,6 +51,7 @@ namespace util {
                         };
 
     namespace details {
+// Toolchain-vintage pattern: the std::function fallback is for standard libraries without std::move_only_function yet.
 #if __cpp_lib_move_only_function
         using default_function_type = std::move_only_function<void()>;
 #else
@@ -75,12 +76,11 @@ namespace util {
 
                             do {
                                 // invoke the task
+                                // No try here: enqueue() and enqueue_detach() catch everything
+                                // inside the task, so nothing can escape std::invoke.
                                 while (auto task = tasks_[id].tasks.pop()) {
-                                    try {
-                                        pending_tasks_.fetch_sub(1, std::memory_order_release);
-                                        std::invoke(std::move(task.value()));
-                                    } catch (...) {
-                                    }
+                                    pending_tasks_.fetch_sub(1, std::memory_order_release);
+                                    std::invoke(std::move(task.value()));
                                 }
 
                                 // try to steal a task
@@ -99,19 +99,17 @@ namespace util {
                         } while (!stop_tok.stop_requested());
                     });
                 } catch (...) {
-                    // catch all
+                    // A thread failed to start (std::system_error). The workers already
+                    // running wait on their semaphore, so jthread's own stop-and-join
+                    // would block forever: wake and join them, then let the caller see
+                    // the failure instead of a pool with missing workers.
+                    stop_and_join();
+                    throw;
                 }
             }
         }
 
-        ~thread_pool() {
-            // stop all threads
-            for (std::size_t i = 0; i < threads_.size(); ++i) {
-                threads_[i].request_stop();
-                tasks_[i].signal.release();
-                threads_[i].join();
-            }
-        }
+        ~thread_pool() { stop_and_join(); }
 
         /// thread pool is non-copyable
         thread_pool(const thread_pool &) = delete;
@@ -188,15 +186,26 @@ namespace util {
             enqueue_task(
                 std::move([f = std::forward<Function>(func),
                            ... largs = std::forward<Args>(args)]() mutable -> decltype(auto) {
-                    // suppress exceptions
                     try {
                         std::invoke(f, largs...);
                     } catch (...) {
+                        // A detached task has no future to carry its exception, and one
+                        // escaping a worker would terminate the process. Detached tasks
+                        // own their error handling; this is only the backstop.
                     }
                 }));
         }
 
       private:
+        // stop all threads
+        void stop_and_join() {
+            for (std::size_t i = 0; i < threads_.size(); ++i) {
+                threads_[i].request_stop();
+                tasks_[i].signal.release();
+                threads_[i].join();
+            }
+        }
+
         template <typename T, typename Lock = std::mutex>
             requires is_lockable<Lock>
         class thread_safe_queue {
