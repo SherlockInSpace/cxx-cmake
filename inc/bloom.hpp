@@ -7,6 +7,7 @@
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <string>
 
 namespace util {
@@ -14,14 +15,28 @@ namespace util {
 class Bloom
 {
 public:
+    /// Why create() refused a hash function count.
+    enum class Error
+    {
+        kNoHashFunctions,     ///< The count was 0.
+        kTooManyHashFunctions ///< The count needs more digest bytes than SHA-256 has.
+    };
+
     /**************************** Constructors ********************************/
 
     /**
-     * @brief Construct a new Bloom filter object.
+     * @brief Construct a Bloom filter with the default 4 hash functions. This
+     * cannot fail.
+     */
+    Bloom();
+
+    /**
+     * @brief Construct a Bloom filter with a chosen number of hash functions.
      *
      * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
+     * @return The filter, or the reason the count was refused.
      */
-    Bloom(size_t = 4);
+    static std::expected<Bloom, Error> create(size_t);
 
     /******************************* Methods **********************************/
 
@@ -62,6 +77,8 @@ public:
 
 private:
     /******************************* Statics **********************************/
+    ///< The number of hash functions the default constructor uses.
+    static constexpr size_t kDefaultHashFunctionCount = 4;
     ///< The SHA-256 digest size in bytes. Each hash function takes
     ///< kBytesPerHashFunction of it, so a filter has at most 16 hash functions.
     static constexpr size_t kDigestSize = 32;
@@ -70,11 +87,20 @@ private:
     ///< The bytes per hash function to use.
     static constexpr size_t kBytesPerHashFunction = 2;
 
+    static_assert(kDefaultHashFunctionCount * kBytesPerHashFunction <= kDigestSize,
+        "The default constructor must not be able to fail");
     static_assert(1 << (kBytesPerHashFunction * 8) >= kBloomFilterStoreSize,
         "Not all Bloom filter bits indexable, "
         "increase bytes_per_hash_function or decrease bloomfilter_store_size");
 
     /******************************* Methods **********************************/
+
+    /**
+     * @brief Construct a filter whose count create() has already checked.
+     *
+     * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
+     */
+    explicit Bloom(size_t);
 
     ///< The digest of one object.
     using Digest = std::array<unsigned char, kDigestSize>;

@@ -8,25 +8,27 @@
 #include <bit>
 #include <cstdlib>
 #include <cstring>
-#include <stdexcept>
 
 using namespace util;
+
+Bloom::Bloom() :
+    Bloom(kDefaultHashFunctionCount)
+{}
 
 Bloom::Bloom(size_t hashFunctionCount) :
     objectCount_(0),
     hashFunctionCount_(hashFunctionCount)
+{}
+
+std::expected<Bloom, Bloom::Error> Bloom::create(size_t hashFunctionCount)
 {
     if (0 == hashFunctionCount) {
-        throw std::invalid_argument("Bloomfilter could not be initialized: "
-                                    "hashFunctionCount must be larger than 0!");
+        return std::unexpected(Error::kNoHashFunctions);
     }
-
     if (kDigestSize < hashFunctionCount * kBytesPerHashFunction) {
-        throw std::invalid_argument("Bloomfilter could not be initialized: "
-                                    "hashFunctionCount too large! "
-                                    "hashFunctionCount *  kBytesPerHashFunction must be smaller or "
-                                    "equal to kDigestSize");
+        return std::unexpected(Error::kTooManyHashFunctions);
     }
+    return Bloom(hashFunctionCount);
 }
 
 void Bloom::insert(const std::string& object)
