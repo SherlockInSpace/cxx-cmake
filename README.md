@@ -5,13 +5,16 @@ Template for building C++ projects/libraries/applications with CMake
 > <https://github.com/SherlockInSpace/cxx-cmake/issues/39>.
 
 ## Building
-Configure, build, and run the unit tests from the repository root:
+Configure, build, and run the tests from the repository root with a preset:
 
 ```
-cmake -S . -B build -G Ninja
-cmake --build build
-ctest --test-dir build
+cmake --preset dev && cmake --build --preset dev && ctest --preset dev
 ```
+
+`cmake --workflow --preset dev` runs the same three steps. `dev` is a Debug
+build and `release` a Release build; each lives in `build/<preset>` and writes
+`compile_commands.json`. Machine-specific settings go in a
+`CMakeUserPresets.json`, which git ignores.
 
 Tests build by default. Pass `-DBUILD_TESTING=OFF` at configure time to build
 only the library.
