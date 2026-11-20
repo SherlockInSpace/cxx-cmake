@@ -3,7 +3,20 @@
 
 # One binary for all the unit tests. We link util once and pick a module
 # with ctest -R.
-find_package(GTest CONFIG REQUIRED)
+# GTestConfig.cmake from the image or sysroot. If CPM is allowed to fetch,
+# it builds the 1.17.0 release tarball, checked by its SHA-256.
+# -DCPM_DOWNLOAD_GTest=ON (with CPM_LOCAL_PACKAGES_ONLY=OFF) builds the tarball
+# even when a local GTest exists. CPM itself only reads that switch in
+# CPMFindPackage, so it is passed through as FORCE.
+CPMAddPackage(
+  NAME GTest
+  FORCE "${CPM_DOWNLOAD_GTest}"
+  VERSION 1.14.0
+  URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
+  URL_HASH SHA256=65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c
+  FIND_PACKAGE_ARGUMENTS "CONFIG"
+  OPTIONS "BUILD_GMOCK OFF" "INSTALL_GTEST OFF"
+)
 include(GoogleTest)
 
 # Every library source and public header needs a test file of the same stem in

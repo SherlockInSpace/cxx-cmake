@@ -16,6 +16,13 @@ ctest --test-dir build
 Tests build by default. Pass `-DBUILD_TESTING=OFF` at configure time to build
 only the library.
 
+Dependencies (OpenSSL, and GoogleTest for the tests) are declared through CPM
+but resolve only through `find_package` by default, so configure fails rather
+than download anything when one is missing. Pass `-DCPM_LOCAL_PACKAGES_ONLY=OFF`
+to let CPM fetch what it cannot find locally (GoogleTest only; OpenSSL always
+comes from the system), or `-DCPM_<Name>_SOURCE=/path/to/checkout` to build a
+dependency from a local checkout.
+
 To install the library, pass `-DCMAKE_INSTALL_PREFIX=<dir>` at configure time
 and run `cmake --install build`.
 

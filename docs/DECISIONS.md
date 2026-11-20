@@ -68,6 +68,13 @@ Be aware that CPM isn't perfect and there are some caveats worth noting:
 - `VERSION` is a `find_package` minimum, not a pin. The real pin is the container tag; the declared
   version is the minimum the code needs.
 - The local lookup is quiet, so read the configure log to learn what resolved.
+- With `CPM_LOCAL_PACKAGES_ONLY=ON` CPM reports a missing package with `SEND_ERROR`, which does
+  not stop configure, and goes on to download it. The template sets
+  `FETCHCONTENT_FULLY_DISCONNECTED` in that mode so the download cannot happen.
+- CPM only reads `CPM_DOWNLOAD_<NAME>` in `CPMFindPackage`, and `CPM_USE_LOCAL_PACKAGES=ON` still
+  finds the local copy first. The template's `CPMAddPackage` declarations pass it through as
+  `FORCE`, so `-DCPM_LOCAL_PACKAGES_ONLY=OFF -DCPM_DOWNLOAD_<NAME>=ON` builds that one dependency
+  from source.
 
 ## Testing
 
