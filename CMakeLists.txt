@@ -218,31 +218,47 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION ${UTIL_INSTALL_CMAKEDIR})
 
 ################################################################################
-# Build Documentation
-# first we can indicate the documentation build as an
-# option and set it to ON by default
-option(BUILD_DOC "Build documentation" ON)
+# Documentation
+# BUILD_DOCS adds a docs target, which is not part of the default build: run
+# cmake --build --preset <preset> --target docs. Doxygen is a build tool, not a
+# library dependency, so it is a plain find_package rather than a CPM package.
+# The doxygen-awesome-css theme is used when it is installed where the
+# container image puts it; nothing is downloaded.
+option(BUILD_DOCS "Add the docs target (Doxygen API documentation)" OFF)
 
-if (BUILD_DOC)
-  # check if Doxygen is installed
-  find_package(Doxygen)
-  if (DOXYGEN_FOUND)
-      # set input and output files
-      set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-      set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+if(BUILD_DOCS)
+  find_package(Doxygen 1.9 REQUIRED)
 
-      # request to configure the file
-      configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-      message("Doxygen build started")
+  find_path(DOXYGEN_AWESOME_CSS_DIR doxygen-awesome.css
+    PATHS /usr/share/doxygen-awesome-css
+    DOC "Directory holding doxygen-awesome.css")
 
-      # note the option ALL which allows to build
-      # the docs together with the application
-      add_custom_target( doc_doxygen ALL
-          COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-          COMMENT "Generating API documentation with Doxygen"
-          VERBATIM )
-  else (DOXYGEN_FOUND)
-    message("Doxygen need to be installed to generate the doxygen documentation")
-  endif (DOXYGEN_FOUND)
-endif(BUILD_DOC)
+  set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
+  set(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION}")
+  set(DOXYGEN_PROJECT_BRIEF "${PROJECT_DESCRIPTION}")
+  set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/docs")
+  set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${PROJECT_SOURCE_DIR}/README.md")
+  set(DOXYGEN_STRIP_FROM_PATH "${PROJECT_SOURCE_DIR}")
+  set(DOXYGEN_STRIP_FROM_INC_PATH "${PROJECT_SOURCE_DIR}/inc")
+  set(DOXYGEN_GENERATE_LATEX NO)
+  set(DOXYGEN_GENERATE_TREEVIEW YES)
+  set(DOXYGEN_EXTRACT_PRIVATE NO)
+  set(DOXYGEN_QUIET YES)
+
+  if(DOXYGEN_AWESOME_CSS_DIR)
+    set(DOXYGEN_DISABLE_INDEX NO)
+    set(DOXYGEN_FULL_SIDEBAR NO)
+    set(DOXYGEN_HTML_COLORSTYLE LIGHT)
+    set(DOXYGEN_HTML_EXTRA_STYLESHEET
+      "${DOXYGEN_AWESOME_CSS_DIR}/doxygen-awesome.css"
+      "${DOXYGEN_AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css")
+  else()
+    message(STATUS "doxygen-awesome-css not found: docs use Doxygen's own theme")
+  endif()
+
+  doxygen_add_docs(docs
+    "${PROJECT_SOURCE_DIR}/inc/util"
+    "${PROJECT_SOURCE_DIR}/README.md"
+    "${PROJECT_SOURCE_DIR}/docs"
+    COMMENT "Generating the API documentation in ${DOXYGEN_OUTPUT_DIRECTORY}")
+endif()

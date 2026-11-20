@@ -76,5 +76,16 @@ add the `CODECOV_TOKEN` secret:
 
 ## Documentation
 
+`-DBUILD_DOCS=ON` adds a `docs` target that runs Doxygen over the public headers,
+this README and `docs/`, writing HTML to `build/<preset>/docs/html`:
+
+```
+cmake --preset dev -DBUILD_DOCS=ON && cmake --build --preset dev --target docs
+```
+
+The container image ships the doxygen-awesome-css theme, which the build picks up
+from `/usr/share/doxygen-awesome-css`; elsewhere the docs use Doxygen's own theme.
+
+
 [docs/DESIGN.md](docs/DESIGN.md) explains how the pieces fit together; [docs/DECISIONS.md](docs/DECISIONS.md)
 explains why they are the way they are.

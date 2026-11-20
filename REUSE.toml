@@ -1,7 +1,7 @@
 version = 1
 
 # Everything is MIT and ours. Files with a header repeat this; the rest
-# (LICENSE, the Markdown, the dotfiles, docs/Doxyfile.in) get it from here.
+# (LICENSE, the Markdown, the dotfiles, CMakePresets.json) get it from here.
 [[annotations]]
 path = ["**"]
 precedence = "aggregate"
