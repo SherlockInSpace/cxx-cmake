@@ -50,6 +50,11 @@ target_link_libraries(util_unit_tests
   PRIVATE util::util GTest::gtest_main
 )
 
+if(UTIL_COVERAGE)
+  target_compile_options(util_unit_tests PRIVATE --coverage)
+  target_link_options(util_unit_tests PRIVATE --coverage)
+endif()
+
 # PRE_TEST lists the tests when ctest runs, not at build time, so a cross
 # build never has to execute the binary on the build host.
 gtest_discover_tests(util_unit_tests

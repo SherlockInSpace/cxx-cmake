@@ -113,11 +113,45 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ################################################################################
+# Coverage
+# gcov instrumentation on util and its unit tests only, never PUBLIC, so
+# nothing that links util is instrumented by accident. The coverage preset
+# turns it on; the coverage target runs the tests and then gcovr once.
+option(UTIL_COVERAGE "Instrument util and its unit tests for gcov coverage" OFF)
+
+if(UTIL_COVERAGE)
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "UTIL_COVERAGE uses gcov and gcovr, so it needs GCC. "
+      "With Clang, use -fprofile-instr-generate -fcoverage-mapping and llvm-cov instead.")
+  endif()
+  find_program(GCOVR_EXECUTABLE gcovr REQUIRED)
+  target_compile_options(${PROJECT_NAME} PRIVATE --coverage)
+  target_link_options(${PROJECT_NAME} PRIVATE --coverage)
+endif()
+
+################################################################################
 # Build tests
 # include(CTest) above defines BUILD_TESTING, default ON. Pass
 # -DBUILD_TESTING=OFF when you only need the library.
 if(BUILD_TESTING)
   add_subdirectory(test)
+endif()
+
+if(UTIL_COVERAGE)
+  if(NOT BUILD_TESTING)
+    message(FATAL_ERROR "UTIL_COVERAGE needs BUILD_TESTING=ON")
+  endif()
+  add_custom_target(coverage
+    COMMAND ${CMAKE_COMMAND}
+      -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+      -DBINARY_DIR=${PROJECT_BINARY_DIR}
+      -DGCOVR=${GCOVR_EXECUTABLE}
+      -DCTEST=${CMAKE_CTEST_COMMAND}
+      -P ${PROJECT_SOURCE_DIR}/cmake/coverage-report.cmake
+    DEPENDS util_unit_tests
+    COMMENT "Running the unit tests and gcovr"
+    USES_TERMINAL
+    VERBATIM)
 endif()
 
 ################################################################################
