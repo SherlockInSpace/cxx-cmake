@@ -34,7 +34,9 @@ template<typename T>
 constexpr T min(T x, T y) noexcept
 {
     static_assert(std::numeric_limits<T>::is_integer, "Argument must be of type integer!");
-    return y ^ ((x ^ y) & -(x < y));
+    // All ones when x < y, else zero, in T itself so unsigned types mix no int in.
+    const T mask = T{0} - static_cast<T>(x < y);
+    return y ^ ((x ^ y) & mask);
 }
 
 /**
@@ -49,7 +51,8 @@ template<typename T>
 constexpr T max(T x, T y) noexcept
 {
     static_assert(std::numeric_limits<T>::is_integer, "Argument must be of type integer!");
-    return x ^ ((x ^ y) & -(x < y));
+    const T mask = T{0} - static_cast<T>(x < y);
+    return x ^ ((x ^ y) & mask);
 }
 
 } // namespace util::bit

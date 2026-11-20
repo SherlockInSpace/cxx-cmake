@@ -63,6 +63,31 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "UTIL_COVERAGE": "ON"
       }
+    },
+    {
+      "name": "ci",
+      "hidden": true,
+      "inherits": "base",
+      "description": "What CI builds: warnings are errors.",
+      "cacheVariables": {
+        "UTIL_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "ci-debug",
+      "inherits": "ci",
+      "displayName": "CI Debug (-Werror)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "ci-release",
+      "inherits": "ci",
+      "displayName": "CI Release (-Werror)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ],
   "buildPresets": [
@@ -92,6 +117,14 @@
       "targets": [
         "coverage"
       ]
+    },
+    {
+      "name": "ci-debug",
+      "configurePreset": "ci-debug"
+    },
+    {
+      "name": "ci-release",
+      "configurePreset": "ci-release"
     }
   ],
   "testPresets": [
@@ -136,6 +169,24 @@
       "name": "coverage",
       "inherits": "base",
       "configurePreset": "coverage"
+    },
+    {
+      "name": "ci-debug",
+      "inherits": "base",
+      "configurePreset": "ci-debug",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "junit.xml"
+      }
+    },
+    {
+      "name": "ci-release",
+      "inherits": "base",
+      "configurePreset": "ci-release",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "junit.xml"
+      }
     }
   ],
   "workflowPresets": [
@@ -221,6 +272,40 @@
         {
           "type": "build",
           "name": "coverage-report"
+        }
+      ]
+    },
+    {
+      "name": "ci-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-debug"
+        },
+        {
+          "type": "build",
+          "name": "ci-debug"
+        },
+        {
+          "type": "test",
+          "name": "ci-debug"
+        }
+      ]
+    },
+    {
+      "name": "ci-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-release"
+        },
+        {
+          "type": "build",
+          "name": "ci-release"
+        },
+        {
+          "type": "test",
+          "name": "ci-release"
         }
       ]
     }

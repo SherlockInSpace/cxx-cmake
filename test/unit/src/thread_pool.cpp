@@ -71,8 +71,8 @@ TEST(thread_pool, paramPassing)
         futures.push_back(pool.enqueue(task));
     }
 
-    for (auto j = 0; j < total_tasks; j++) {
-        EXPECT_EQ(j, futures[j].get());
+    for (std::size_t j = 0; j < futures.size(); j++) {
+        EXPECT_EQ(static_cast<int>(j), futures[j].get());
     }
 }
 

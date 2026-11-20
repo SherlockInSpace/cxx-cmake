@@ -82,6 +82,28 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 ################################################################################
+# Warnings
+# The flags live on util_warnings, an INTERFACE target that util and its tests
+# link PRIVATE through $<BUILD_INTERFACE:...>, so they never reach a consumer's
+# compile line and the target is never exported. -Werror is a separate switch:
+# on in the CI presets, off in dev, so a newer compiler's new warning does not
+# stop a developer's build but does stop a pull request.
+option(UTIL_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+
+add_library(util_warnings INTERFACE)
+target_compile_options(util_warnings INTERFACE
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
+    -Wall -Wextra -Wpedantic
+    -Wshadow -Wconversion -Wsign-conversion -Wold-style-cast -Wcast-align
+    -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference
+    -Wdouble-promotion -Wformat=2 -Wimplicit-fallthrough>
+  $<$<CXX_COMPILER_ID:GNU>:
+    -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast>
+  $<$<AND:$<BOOL:${UTIL_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-Werror>
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE $<BUILD_INTERFACE:util_warnings>)
+
+################################################################################
 # Target sources and public headers
 # Globbed on purpose: a new file needs no edit here, and the test-file check
 # in test/unit picks it up. CONFIGURE_DEPENDS re-checks the globs at build
