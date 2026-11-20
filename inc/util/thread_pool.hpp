@@ -59,11 +59,22 @@ namespace util {
 #endif
     }  // namespace details
 
+    /**
+     * @brief A work-stealing thread pool: one task queue per thread, and an idle thread
+     * takes work from the back of the others' queues.
+     * @tparam FunctionType The type-erased task the queues hold.
+     */
     template <typename FunctionType = details::default_function_type>
         requires std::invocable<FunctionType> &&
                  std::is_same_v<void, std::invoke_result_t<FunctionType>>
     class thread_pool {
       public:
+        /**
+         * @brief Start the worker threads.
+         * @param[in] number_of_threads How many workers, one queue each.
+         * @throws std::system_error if a thread cannot be started; the workers already
+         * started are stopped and joined first.
+         */
         explicit thread_pool(
             const unsigned int &number_of_threads = std::thread::hardware_concurrency())
             : tasks_(number_of_threads) {

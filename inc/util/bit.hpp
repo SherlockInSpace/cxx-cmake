@@ -11,7 +11,7 @@
  *
  * In real code prefer std::min and std::max; compilers already emit
  * branchless instructions for them. The other classic bit tricks are in
- * <bit> since C++20 as constexpr functions: std::popcount, std::countl_zero,
+ * \<bit\> since C++20 as constexpr functions: std::popcount, std::countl_zero,
  * std::countr_zero, std::has_single_bit, std::bit_ceil, std::bit_floor,
  * std::rotl/std::rotr and std::byteswap (C++23).
  */

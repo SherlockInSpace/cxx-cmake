@@ -12,6 +12,15 @@
 
 namespace util {
 
+/**
+ * @brief A Bloom filter over strings: a fixed 65536-bit set that answers
+ * "possibly present" or "definitely absent".
+ *
+ * Each object sets one bit per hash function, taken from its SHA-256 digest.
+ * contains() never gives a false negative; a false positive becomes likelier
+ * as more objects go in. insert() and clear() need exclusive access, while
+ * concurrent contains() calls are safe.
+ */
 class Bloom
 {
 public:
@@ -36,7 +45,7 @@ public:
      * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
      * @return The filter, or the reason the count was refused.
      */
-    static std::expected<Bloom, Error> create(size_t);
+    static std::expected<Bloom, Error> create(size_t hashFunctionCount);
 
     /******************************* Methods **********************************/
 
@@ -45,7 +54,7 @@ public:
      *
      * @param[in] object The object to insert into the hash table.
      */
-    void insert(const std::string&);
+    void insert(const std::string& object);
 
     /**
      * @brief Clear out the hash table.
@@ -59,7 +68,7 @@ public:
      * @param[in] object The object to check.
      * @return Returns true if the object exists, false otherwise.
      */
-    bool contains(const std::string&) const;
+    bool contains(const std::string& object) const;
 
     /**
      * @brief Returns the number of objects in the hash table.
@@ -100,7 +109,7 @@ private:
      *
      * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
      */
-    explicit Bloom(size_t);
+    explicit Bloom(size_t hashFunctionCount);
 
     ///< The digest of one object.
     using Digest = std::array<unsigned char, kDigestSize>;
@@ -113,7 +122,7 @@ private:
      * @param[in] object The object to hash.
      * @return The object's digest.
      */
-    static Digest hash(const std::string&);
+    static Digest hash(const std::string& object);
 
     /**
      * @brief The filter bit selected by one hash function.
@@ -122,7 +131,7 @@ private:
      * @param[in] hashFunction Which hash function, below hashFunctionCount_.
      * @return The bit index, read little-endian from the digest on every host.
      */
-    static std::uint16_t bitIndex(const Digest&, size_t);
+    static std::uint16_t bitIndex(const Digest& digest, size_t hashFunction);
 
     /******************************* Members **********************************/
     ///< The current number of objects in the hash table.
