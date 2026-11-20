@@ -62,51 +62,51 @@ TEST(thread_pool, passRawReference)
 TEST(thread_pool, paramPassing)
 {
     util::thread_pool pool(4);
-    constexpr auto total_tasks = 30;
+    constexpr auto kTotalTasks = 30;
     std::vector<std::future<int>> futures;
 
-    for (auto i = 0; i < total_tasks; i++) {
+    for (auto i = 0; i < kTotalTasks; i++) {
         auto task = [index = i]() { return index; };
 
         futures.push_back(pool.enqueue(task));
     }
 
     for (std::size_t j = 0; j < futures.size(); j++) {
-        EXPECT_EQ(static_cast<int>(j), futures[j].get());
+        EXPECT_EQ(static_cast<int>(j), futures.at(j).get());
     }
 }
 
 TEST(thread_pool, multiTypeParameter)
 {
     util::thread_pool pool{};
-    struct test_struct
+    struct TestStruct
     {
         int value{};
-        double d_value{};
+        double dValue{};
     };
 
-    test_struct test;
+    TestStruct test;
 
-    auto task = [&test](int x, double y) -> test_struct {
+    auto task = [&test](int x, double y) -> TestStruct {
         test.value = x;
-        test.d_value = y;
+        test.dValue = y;
 
-        return test_struct{x, y};
+        return TestStruct{.value = x, .dValue = y};
     };
 
     auto future = pool.enqueue(task, 2, 3.2);
     const auto result = future.get();
     EXPECT_EQ(result.value, test.value);
-    EXPECT_EQ(result.d_value, test.d_value);
+    EXPECT_EQ(result.dValue, test.dValue);
 }
 
 TEST(thread_pool, workCompletedAfterDestruction)
 {
     std::atomic<int> counter{0};
-    constexpr auto total_tasks = 30;
+    constexpr auto kTotalTasks = 30;
     {
         util::thread_pool pool(4);
-        for (auto i = 0; i < total_tasks; i++) {
+        for (auto i = 0; i < kTotalTasks; i++) {
             // Long enough that most tasks are still queued when the pool is
             // destroyed, which is what this test is about.
             auto task = [i, &counter]() {
@@ -117,18 +117,18 @@ TEST(thread_pool, workCompletedAfterDestruction)
         }
     }
 
-    EXPECT_EQ(counter.load(), total_tasks);
+    EXPECT_EQ(counter.load(), kTotalTasks);
 }
 
-TEST(thread_pool, taskExeceptionDoesNotKill)
+TEST(thread_pool, taskExceptionDoesNotKill)
 {
-    auto throw_task = [](int) -> int { throw std::logic_error("Error occurred."); };
-    auto regular_task = [](int input) -> int { return input * 2; };
+    auto throwTask = [](int) -> int { throw std::logic_error("Error occurred."); };
+    auto regularTask = [](int input) -> int { return input * 2; };
 
     std::atomic_uint_fast64_t count(0);
 
-    auto throw_no_return = []() { throw std::logic_error("Error occurred."); };
-    auto no_throw_no_return = [&count]() {
+    auto throwNoReturn = []() { throw std::logic_error("Error occurred."); };
+    auto noThrowNoReturn = [&count]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         count += 1;
     };
@@ -136,15 +136,15 @@ TEST(thread_pool, taskExeceptionDoesNotKill)
     {
         util::thread_pool pool;
 
-        auto throw_future = pool.enqueue(throw_task, 1);
-        auto no_throw_future = pool.enqueue(regular_task, 2);
+        auto throwFuture = pool.enqueue(throwTask, 1);
+        auto noThrowFuture = pool.enqueue(regularTask, 2);
 
-        EXPECT_THROW(throw_future.get(), std::logic_error);
-        EXPECT_EQ(no_throw_future.get(), 4);
+        EXPECT_THROW(throwFuture.get(), std::logic_error);
+        EXPECT_EQ(noThrowFuture.get(), 4);
 
         // do similar check for tasks without return
-        pool.enqueue_detach(throw_no_return);
-        pool.enqueue_detach(no_throw_no_return);
+        pool.enqueue_detach(throwNoReturn);
+        pool.enqueue_detach(noThrowNoReturn);
     }
 
     EXPECT_EQ(count.load(), 1);

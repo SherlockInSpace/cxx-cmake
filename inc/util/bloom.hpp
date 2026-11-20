@@ -25,7 +25,7 @@ class Bloom
 {
 public:
     /// Why create() refused a hash function count.
-    enum class Error
+    enum class Error : std::uint8_t
     {
         kNoHashFunctions,     ///< The count was 0.
         kTooManyHashFunctions ///< The count needs more digest bytes than SHA-256 has.
@@ -45,7 +45,7 @@ public:
      * @param[in] hashFunctionCount The number of hash functions, 1 to 16.
      * @return The filter, or the reason the count was refused.
      */
-    static std::expected<Bloom, Error> create(size_t hashFunctionCount);
+    [[nodiscard]] static std::expected<Bloom, Error> create(size_t hashFunctionCount);
 
     /******************************* Methods **********************************/
 
@@ -60,7 +60,7 @@ public:
      * @brief Clear out the hash table.
      *
      */
-    void clear(void);
+    void clear();
 
     /**
      * @brief Checks whether the object exists in the hash table.
@@ -68,21 +68,21 @@ public:
      * @param[in] object The object to check.
      * @return Returns true if the object exists, false otherwise.
      */
-    bool contains(const std::string& object) const;
+    [[nodiscard]] bool contains(const std::string& object) const;
 
     /**
      * @brief Returns the number of objects in the hash table.
      *
      * @return Returns the number of objects in the hash table.
      */
-    size_t objectCount(void) const;
+    [[nodiscard]] size_t objectCount() const;
 
     /**
      * @brief Checks if the hash table is empty or not.
      *
      * @return Returns true if the hash table is empty, false otherwise.
      */
-    bool empty(void) const;
+    [[nodiscard]] bool empty() const;
 
 private:
     /******************************* Statics **********************************/
@@ -122,7 +122,7 @@ private:
      * @param[in] object The object to hash.
      * @return The object's digest.
      */
-    static Digest hash(const std::string& object);
+    [[nodiscard]] static Digest hash(const std::string& object);
 
     /**
      * @brief The filter bit selected by one hash function.
@@ -131,13 +131,13 @@ private:
      * @param[in] hashFunction Which hash function, below hashFunctionCount_.
      * @return The bit index, read little-endian from the digest on every host.
      */
-    static std::uint16_t bitIndex(const Digest& digest, size_t hashFunction);
+    [[nodiscard]] static std::uint16_t bitIndex(const Digest& digest, size_t hashFunction);
 
     /******************************* Members **********************************/
     ///< The current number of objects in the hash table.
     size_t objectCount_;
     ///< The size of hash function.
-    const size_t hashFunctionCount_;
+    size_t hashFunctionCount_;
     ///< The bit-array representing the Bloom filter.
     std::bitset<kBloomFilterStoreSize> bloomfilterStore_;
 }; // end class Bloom

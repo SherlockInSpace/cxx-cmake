@@ -47,9 +47,10 @@ TEST(bloom, createInsertCountClear)
         "Hello", "World", "!", "My", "name", "is", "Bloom!"};
 
     // Add each string and check the objectCount matches
-    for (std::size_t idx = 0; idx < testStrings.size(); ++idx) {
-        bloomFilter.insert(testStrings[idx]);
-        EXPECT_EQ(idx + 1, bloomFilter.objectCount());
+    std::size_t inserted = 0;
+    for (const auto& str : testStrings) {
+        bloomFilter.insert(str);
+        EXPECT_EQ(++inserted, bloomFilter.objectCount());
     }
 
     // clear the hash table
@@ -149,6 +150,7 @@ TEST(bloom, concurrentContains)
     std::atomic<int> misses{0};
     {
         std::vector<std::jthread> readers;
+        readers.reserve(4);
         for (int reader = 0; reader < 4; ++reader) {
             readers.emplace_back([&bloomFilter, &keys, &misses] {
                 for (int round = 0; round < 100; ++round) {

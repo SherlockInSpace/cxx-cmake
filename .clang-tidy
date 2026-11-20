@@ -31,8 +31,8 @@ Checks: >
 #   readability-identifier-length: `x`, `y`, `i` are the right names in small
 #     bit-twiddling helpers.
 
-# Uncomment once the renames have landed.
-# WarningsAsErrors: '*'
+# Every diagnostic fails the run; the checks above are the ones we hold to.
+WarningsAsErrors: '*'
 
 # First-party headers only; the vendored thread_pool.hpp keeps upstream style.
 HeaderFilterRegex: 'inc/util/(bit|bloom)\.hpp$'
@@ -40,6 +40,10 @@ HeaderFilterRegex: 'inc/util/(bit|bloom)\.hpp$'
 FormatStyle: file
 
 CheckOptions:
+  # GoogleTest's EXPECT_*/ASSERT_* macros expand to nested branches, so a test
+  # with a few EXPECT_THROWs would otherwise read as too complex.
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: true
   # Types
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
