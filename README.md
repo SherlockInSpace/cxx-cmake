@@ -58,6 +58,14 @@ and `summary.json` for the per-file checks, and `summary.md`, a Markdown table
 built from the JSON summary because gcovr 7 has no Markdown output. Only `util`
 and its unit tests are instrumented, never anything that links `util`.
 
+The target fails when total line coverage is under
+`UTIL_COVERAGE_FAIL_UNDER_LINE` (90%) or any single file is under
+`UTIL_COVERAGE_FILE_FLOOR` (80%). The per-file floor is what catches a test file
+that exists but tests nothing, which the configure-time test-file check cannot
+see. The vendored thread pool's coverage moves by several points between runs
+because work stealing depends on timing, which is why the per-file floor sits
+below the total.
+
 `UTIL_COVERAGE` needs GCC. A fork that builds with Clang should use its
 source-based coverage instead: compile and link with
 `-fprofile-instr-generate -fcoverage-mapping`, run the tests with
