@@ -1,5 +1,5 @@
 # clang-tidy 22. Diagnostics and naming only; layout is clang-format's job.
-# Naming is the camelCase style from docs/DECISIONS.md. inc/thread_pool.hpp
+# Naming is the camelCase style from docs/DECISIONS.md. inc/util/thread_pool.hpp
 # is vendored (THIRD_PARTY_NOTICES.md) and keeps upstream style.
 ---
 Checks: >
@@ -34,8 +34,8 @@ Checks: >
 # Uncomment once the renames have landed.
 # WarningsAsErrors: '*'
 
-# First-party headers only. Update to inc/util/(bit|bloom)\.hpp when they move.
-HeaderFilterRegex: 'inc/(bit|bloom)\.hpp$'
+# First-party headers only; the vendored thread_pool.hpp keeps upstream style.
+HeaderFilterRegex: 'inc/util/(bit|bloom)\.hpp$'
 
 FormatStyle: file
 
