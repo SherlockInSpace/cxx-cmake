@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
 #include <vector>
 
 /************************************ TESTS ***********************************/
@@ -15,50 +16,52 @@ TEST(bloom, exceptHashFunctionCount)
 
 TEST(bloom, createInsertCountClear)
 {
-    util::Bloom* bloomFilter = new util::Bloom();
+    util::Bloom bloomFilter;
 
     // Is the current object count 0?
-    EXPECT_EQ(0, bloomFilter->objectCount());
+    EXPECT_EQ(0, bloomFilter.objectCount());
 
-    std::vector<std::string> test_strings = {"Hello", "World", "!", "My", "name", "is", "Bloom!"};
+    const std::vector<std::string> testStrings = {
+        "Hello", "World", "!", "My", "name", "is", "Bloom!"};
 
     // Add each string and check the objectCount matches
-    for (auto idx = 0; idx < test_strings.size(); ++idx) {
-        bloomFilter->insert(test_strings[idx]);
-        EXPECT_EQ(idx + 1, bloomFilter->objectCount());
+    for (std::size_t idx = 0; idx < testStrings.size(); ++idx) {
+        bloomFilter.insert(testStrings[idx]);
+        EXPECT_EQ(idx + 1, bloomFilter.objectCount());
     }
 
     // clear the hash table
-    bloomFilter->clear();
-    EXPECT_EQ(0, bloomFilter->objectCount());
+    bloomFilter.clear();
+    EXPECT_EQ(0, bloomFilter.objectCount());
 }
 
 TEST(bloom, contains)
 {
-    util::Bloom* bloomFilter = new util::Bloom();
+    util::Bloom bloomFilter;
 
     // Is the current object count 0?
-    EXPECT_EQ(0, bloomFilter->objectCount());
+    EXPECT_EQ(0, bloomFilter.objectCount());
 
-    std::vector<std::string> test_strings = {"Hello", "World", "!", "My", "name", "is", "Bloom!"};
+    const std::vector<std::string> testStrings = {
+        "Hello", "World", "!", "My", "name", "is", "Bloom!"};
 
     // Add each string
-    for (auto idx = 0; idx < test_strings.size(); ++idx) {
-        bloomFilter->insert(test_strings[idx]);
+    for (const auto& str : testStrings) {
+        bloomFilter.insert(str);
     }
 
     // Check each string exists
-    for (auto& str : test_strings) {
-        EXPECT_EQ(true, bloomFilter->contains(str));
+    for (const auto& str : testStrings) {
+        EXPECT_EQ(true, bloomFilter.contains(str));
     }
 
     // Check for string that does NOT exist
-    EXPECT_EQ(false, bloomFilter->contains("space"));
+    EXPECT_EQ(false, bloomFilter.contains("space"));
 }
 
 TEST(bloom, collision)
 {
-    util::Bloom* bloomFilter = new util::Bloom();
+    util::Bloom bloomFilter;
 
     std::string msg1 = "\xd1\x31\xdd\x02\xc5\xe6\xee\xc4"
                        "\x69\x3d\x9a\x06\x98\xaf\xf9\x5c"
@@ -95,16 +98,16 @@ TEST(bloom, collision)
                        "\x96\xf9\x65\xab\x6f\xf7\x2a\x70";
 
     // insert message 1
-    bloomFilter->insert(msg1);
+    bloomFilter.insert(msg1);
 
     // check that string 1 is present
-    EXPECT_EQ(true, bloomFilter->contains(msg1));
+    EXPECT_EQ(true, bloomFilter.contains(msg1));
 
     // check that string 2 is present (collision)
-    EXPECT_EQ(true, bloomFilter->contains(msg2));
+    EXPECT_EQ(true, bloomFilter.contains(msg2));
 
     // check that another string does not produce a collision
-    EXPECT_EQ(false, bloomFilter->contains("hello"));
+    EXPECT_EQ(false, bloomFilter.contains("hello"));
 }
 
 TEST(bloom, empty)
