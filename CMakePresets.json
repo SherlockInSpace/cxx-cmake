@@ -54,6 +54,15 @@
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
         "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=thread"
       }
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "displayName": "gcov coverage (Debug, GCC)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "UTIL_COVERAGE": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -72,6 +81,17 @@
     {
       "name": "tsan",
       "configurePreset": "tsan"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "coverage-report",
+      "configurePreset": "coverage",
+      "targets": [
+        "coverage"
+      ]
     }
   ],
   "testPresets": [
@@ -111,6 +131,11 @@
       "environment": {
         "TSAN_OPTIONS": "halt_on_error=1:second_deadlock_stack=1"
       }
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "configurePreset": "coverage"
     }
   ],
   "workflowPresets": [
@@ -179,6 +204,23 @@
         {
           "type": "test",
           "name": "tsan"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage-report"
         }
       ]
     }

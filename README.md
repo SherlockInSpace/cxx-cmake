@@ -33,6 +33,36 @@ dependency from a local checkout.
 To install the library, pass `-DCMAKE_INSTALL_PREFIX=<dir>` at configure time
 and run `cmake --install build`.
 
+## Coverage
+
+```
+cmake --workflow --preset coverage
+```
+
+configures a GCC Debug build with `UTIL_COVERAGE=ON`, builds it, then builds the
+`coverage` target. That target deletes old `.gcda` files, runs the unit tests and
+runs gcovr once over `src/` and `inc/`, writing `build/coverage/coverage/`:
+`cobertura.xml` for CI annotations, `html/index.html` to browse, `coverage.json`
+and `summary.json` for the per-file checks, and `summary.md`, a Markdown table
+built from the JSON summary because gcovr 7 has no Markdown output. Only `util`
+and its unit tests are instrumented, never anything that links `util`.
+
+`UTIL_COVERAGE` needs GCC. A fork that builds with Clang should use its
+source-based coverage instead: compile and link with
+`-fprofile-instr-generate -fcoverage-mapping`, run the tests with
+`LLVM_PROFILE_FILE=%p.profraw`, then `llvm-profdata merge` and `llvm-cov export
+-format=lcov` (or `llvm-cov show -format=html`).
+
+To publish to Codecov, add a step like this after the coverage step in CI and
+add the `CODECOV_TOKEN` secret:
+
+```yaml
+# - uses: codecov/codecov-action@v5
+#   with:
+#     files: build/coverage/coverage/cobertura.xml
+#     token: ${{ secrets.CODECOV_TOKEN }}
+```
+
 ## Documentation
 
 [docs/DESIGN.md](docs/DESIGN.md) explains how the pieces fit together; [docs/DECISIONS.md](docs/DECISIONS.md)
