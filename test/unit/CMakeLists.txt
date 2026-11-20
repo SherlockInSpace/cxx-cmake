@@ -49,6 +49,7 @@ add_executable(util_unit_tests ${UNIT_TEST_FILES})
 target_link_libraries(util_unit_tests
   PRIVATE util::util util_warnings GTest::gtest_main
 )
+set_target_properties(util_unit_tests PROPERTIES CXX_SCAN_FOR_MODULES OFF)
 
 if(UTIL_COVERAGE)
   target_compile_options(util_unit_tests PRIVATE --coverage)

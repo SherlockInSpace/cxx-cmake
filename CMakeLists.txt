@@ -81,6 +81,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # PUBLIC so consumers compile against the same standard as the headers.
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
+# No C++20 modules here, so skip CMake's module dependency scan. With it on,
+# every translation unit gets an extra scanning step and compile_commands.json
+# carries GCC-only flags (-fmodules-ts, -fdeps-format=...) that clang-tidy and
+# clangd reject. A fork that adds modules turns it back on for those targets.
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_SCAN_FOR_MODULES OFF)
+
 ################################################################################
 # Warnings
 # The flags live on util_warnings, an INTERFACE target that util and its tests
