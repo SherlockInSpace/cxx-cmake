@@ -52,6 +52,9 @@ Local modifications relative to upstream `0.5.1`:
   workers already running and rethrows, instead of leaving a pool with
   missing workers. The `catch (...)` in `enqueue_detach()` stays, with a
   comment: a detached task has nowhere to report an exception.
+- Doc comments added to the `thread_pool` class and its constructor (issue #47),
+  which upstream leaves undocumented, so the docs build passes with warnings
+  as errors.
 - The `__cpp_lib_move_only_function` / `std::function` fallback is kept, with
   a one-line "toolchain-vintage pattern" comment, rather than removed for the
   C++23 floor: it costs nothing where `std::move_only_function` exists and

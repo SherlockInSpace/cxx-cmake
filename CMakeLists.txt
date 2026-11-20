@@ -244,6 +244,9 @@ if(BUILD_DOCS)
   set(DOXYGEN_GENERATE_TREEVIEW YES)
   set(DOXYGEN_EXTRACT_PRIVATE NO)
   set(DOXYGEN_QUIET YES)
+  # Every warning fails the docs target once Doxygen has listed them all, so an
+  # undocumented public symbol or a stale @param fails the docs job.
+  set(DOXYGEN_WARN_AS_ERROR FAIL_ON_WARNINGS)
 
   if(DOXYGEN_AWESOME_CSS_DIR)
     set(DOXYGEN_DISABLE_INDEX NO)
