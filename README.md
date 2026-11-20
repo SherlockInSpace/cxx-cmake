@@ -16,6 +16,11 @@ build and `release` a Release build; each lives in `build/<preset>` and writes
 `compile_commands.json`. Machine-specific settings go in a
 `CMakeUserPresets.json`, which git ignores.
 
+Tests are picked by CTest label: `ctest --preset dev -L unit` runs the
+GoogleTest cases, and `-L functional` installs `util` into a scratch prefix under
+the build directory, then configures, builds and runs a separate project that
+uses it through `find_package(util CONFIG REQUIRED)`. Without `-L` both run.
+
 `asan-ubsan` (AddressSanitizer with UndefinedBehaviorSanitizer) and `tsan`
 (ThreadSanitizer) are Debug builds with the sanitizer on everything; their test
 presets stop at the first report.
