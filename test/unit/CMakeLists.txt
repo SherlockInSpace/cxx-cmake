@@ -6,6 +6,26 @@
 find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
+# Every library source and public header needs a test file of the same stem in
+# test/unit/src/, so an untested module fails at configure rather than in
+# review. A stem with nothing to test on its own goes in UTIL_TEST_EXEMPT with
+# a comment saying why. The check only sees that the file exists; the coverage
+# floor is what notices a test file that tests nothing.
+set(UTIL_TEST_EXEMPT "")
+
+foreach(file IN LISTS SOURCE_FILES PUBLIC_HEADER_FILES)
+  cmake_path(GET file STEM stem)
+  if(stem IN_LIST UTIL_TEST_EXEMPT)
+    continue()
+  endif()
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${stem}.cpp")
+    cmake_path(RELATIVE_PATH file BASE_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    message(FATAL_ERROR
+      "${file} has no unit test: "
+      "add test/unit/src/${stem}.cpp or list ${stem} in UTIL_TEST_EXEMPT")
+  endif()
+endforeach()
+
 # Our own glob rather than SOURCE_FILES, so a test file needs no matching
 # file in src/.
 file(GLOB UNIT_TEST_FILES CONFIGURE_DEPENDS
