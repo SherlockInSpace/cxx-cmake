@@ -165,6 +165,30 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+################################################################################
+# Benchmarks
+# Google Benchmark binaries in bench/, run weekly and at release rather than on
+# every commit (docs/DECISIONS.md). Release builds only, and never with
+# coverage: timing a Debug or instrumented build measures the wrong thing.
+option(BUILD_BENCH "Build the Google Benchmark binaries in bench/" OFF)
+
+if(BUILD_BENCH)
+  if(UTIL_COVERAGE)
+    message(FATAL_ERROR "BUILD_BENCH and UTIL_COVERAGE do not mix: "
+      "coverage instrumentation distorts the timings")
+  endif()
+  get_property(multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  if(NOT multi_config AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(FATAL_ERROR "BUILD_BENCH needs CMAKE_BUILD_TYPE=Release; "
+      "the bench preset sets it")
+  endif()
+  if(NOT BUILD_TESTING)
+    message(FATAL_ERROR "BUILD_BENCH registers the benchmarks with CTest, "
+      "so it needs BUILD_TESTING=ON")
+  endif()
+  add_subdirectory(bench)
+endif()
+
 if(UTIL_COVERAGE)
   if(NOT BUILD_TESTING)
     message(FATAL_ERROR "UTIL_COVERAGE needs BUILD_TESTING=ON")
