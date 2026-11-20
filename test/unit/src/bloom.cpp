@@ -5,7 +5,9 @@
 
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <string>
+#include <thread>
 #include <vector>
 
 /************************************ TESTS ***********************************/
@@ -127,4 +129,32 @@ TEST(bloom, empty)
     bloomFilter.clear();
 
     EXPECT_EQ(true, bloomFilter.empty());
+}
+
+// contains() is const and keeps no scratch state, so concurrent lookups on a
+// filter nobody is writing to are safe. Run under TSan to check it.
+TEST(bloom, concurrentContains)
+{
+    util::Bloom bloomFilter;
+    const std::vector<std::string> keys = {"alpha", "beta", "gamma", "delta", "epsilon"};
+    for (const auto& key : keys) {
+        bloomFilter.insert(key);
+    }
+
+    std::atomic<int> misses{0};
+    {
+        std::vector<std::jthread> readers;
+        for (int reader = 0; reader < 4; ++reader) {
+            readers.emplace_back([&bloomFilter, &keys, &misses] {
+                for (int round = 0; round < 100; ++round) {
+                    for (const auto& key : keys) {
+                        if (!bloomFilter.contains(key)) {
+                            ++misses;
+                        }
+                    }
+                }
+            });
+        }
+    }
+    EXPECT_EQ(0, misses.load());
 }

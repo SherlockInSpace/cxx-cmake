@@ -5,8 +5,11 @@
 
 #include <openssl/md5.h>
 
+#include <array>
 #include <bitset>
-#include <memory>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 
 namespace util {
 
@@ -63,7 +66,7 @@ private:
     /******************************* Statics **********************************/
     ///< The MD5 hash function size in bytes.
     static constexpr size_t kMD5ResultSize = 16;
-    ///< The store size of the Bloom filter in bytes.
+    ///< The store size of the Bloom filter in bits.
     static constexpr size_t kBloomFilterStoreSize = 65536;
     ///< The bytes per hash function to use.
     static constexpr size_t kBytesPerHashFunction = 2;
@@ -74,13 +77,25 @@ private:
 
     /******************************* Methods **********************************/
 
+    ///< The digest of one object.
+    using Digest = std::array<unsigned char, kMD5ResultSize>;
+
     /**
-     * @brief Internal function to calculate the hash value of an object. Stores
-     * result in a private member for use.
+     * @brief Hash an object. Touches no member, so concurrent calls are safe.
      *
-     * @param[in] object The object to calculate the hash against.
+     * @param[in] object The object to hash.
+     * @return The object's digest.
      */
-    void hash(const std::string&) const;
+    static Digest hash(const std::string&);
+
+    /**
+     * @brief The filter bit selected by one hash function.
+     *
+     * @param[in] digest The object's digest.
+     * @param[in] hashFunction Which hash function, below hashFunctionCount_.
+     * @return The bit index, read little-endian from the digest on every host.
+     */
+    static std::uint16_t bitIndex(const Digest&, size_t);
 
     /******************************* Members **********************************/
     ///< The current number of objects in the hash table.
@@ -89,8 +104,6 @@ private:
     const size_t hashFunctionCount_;
     ///< The bit-array representing the Bloom filter.
     std::bitset<kBloomFilterStoreSize> bloomfilterStore_;
-    ///< Used to store the resulting MD5 hash result of an object.
-    const std::unique_ptr<unsigned char[]> md5HashResultBuffer_;
 }; // end class Bloom
 
 } // end namespace util
