@@ -1,0 +1,51 @@
+# Minimal build-and-test gate for pull requests and pushes to the integration
+# branches.
+#
+# Interim: the job runs on GitHub's ubuntu-24.04 runner with apt packages and
+# CMake from PyPI, because the cxx-cmake-container ci image is not published to
+# GHCR yet. Once it is, this job moves into
+# ghcr.io/sherlockinspace/cxx-cmake-container/ci:X.Y.Z@sha256:<digest> and the
+# install step goes away. ubuntu-24.04 ships GoogleTest 1.14 and OpenSSL 3.0,
+# the minimum versions the build declares, so this also checks that the floor
+# still builds.
+name: ci
+
+on:
+  pull_request:
+    branches: [library, main]
+  push:
+    branches: [library, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: build and test (gcc 14, ubuntu-24.04)
+    runs-on: ubuntu-24.04
+    env:
+      CXX: g++-14
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install the toolchain and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++-14 ninja-build libssl-dev libgtest-dev
+          python3 -m venv "$RUNNER_TEMP/tools"
+          "$RUNNER_TEMP/tools/bin/pip" install --quiet cmake==4.3.1
+          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
