@@ -1,0 +1,41 @@
+# Weekly-only work, called after the full suite on a schedule. The image
+# does not change between weekly runs, but the runners, Ubuntu's archive,
+# PyPI and the actions do, so a failed full suite opens one issue, or
+# comments on it while it is open. The caller grants issues: write.
+name: weekly
+
+on:
+  workflow_call:
+    inputs:
+      full-result:
+        description: result of the full suite in the calling run (needs.<job>.result)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  drift-issue:
+    if: ${{ inputs.full-result == 'failure' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the drift issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="ci: weekly run fails on main"
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title \
+            --jq "map(select(.title == \"$title\"))[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "Failed again on $(date -u +%F): $RUN_URL"
+          else
+            gh issue create --title "$title" --body "$(printf '%s\n\n%s\n' \
+              "The weekly run of the full suite failed on $(date -u +%F): $RUN_URL" \
+              "If main has not changed since its last green run, look at what moves underneath it: the runner image, Ubuntu's archive (the distro leg), PyPI or an action.")"
+          fi

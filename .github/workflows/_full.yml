@@ -1,0 +1,157 @@
+# The full suite, callable like _gate.yml. gcc Debug and Release on amd64 and
+# natively on GitHub's arm64 runner, every test the build registers; one leg
+# builds without the image, from Ubuntu 26.04's own packages; tsan runs the
+# tests under ThreadSanitizer; docs builds the API docs with warnings as
+# errors; coverage checks the floors. docs and coverage leave their HTML as
+# the docs and coverage artifacts. The caller grants checks: write.
+name: full
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: cxx-cmake-container ci image, by version and digest
+        required: true
+        type: string
+      distro-packages:
+        description: apt packages the leg without the image installs
+        type: string
+        default: g++-15 ninja-build libssl-dev libgtest-dev libgmock-dev
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    name: ${{ matrix.arch }} gcc ${{ matrix.preset }}
+    runs-on: ${{ matrix.runner }}
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        preset: [ci-debug, ci-release]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    env:
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+    steps:
+      - uses: actions/checkout@v7
+
+      # Inside the container github.workspace is the host's path, so the
+      # cache directory comes from the shell's GITHUB_WORKSPACE.
+      - name: Point ccache at the workspace
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+
+      # The amd64 keys match the gate's, so pull requests start from main's
+      # cache.
+      - uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+      - name: ccache statistics
+        if: ${{ !cancelled() }}
+        run: ccache --show-stats
+
+      - name: Report tests
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: build/${{ matrix.preset }}/junit.xml
+          check_name: tests (${{ matrix.arch }} gcc ${{ matrix.preset }})
+          include_passed: true
+          detailed_summary: true
+
+  # The image is one way to get the toolchain. This leg uses the distribution
+  # as it comes, plus CMake 4.3.1 from PyPI because no Ubuntu release has it,
+  # to show the build needs nothing the image adds.
+  distro:
+    name: ubuntu-26.04 gcc-15 without the image
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    env:
+      CXX: g++-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install the toolchain and libraries
+        env:
+          PACKAGES: ${{ inputs.distro-packages }}
+        run: |
+          sudo apt-get update
+          # shellcheck disable=SC2086 # one word per package
+          sudo apt-get install -y --no-install-recommends $PACKAGES
+          python3 -m venv "$RUNNER_TEMP/tools"
+          "$RUNNER_TEMP/tools/bin/pip" install --quiet cmake==4.3.1
+          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Configure, build and test
+        run: cmake --workflow --preset ci-debug
+
+  # ThreadSanitizer is slow and only the thread pool is threaded, so it runs
+  # here rather than on every pull request.
+  tsan:
+    name: tsan
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and test under ThreadSanitizer
+        run: cmake --workflow --preset tsan
+
+  # The docs target sets WARN_AS_ERROR, so any Doxygen warning fails the job.
+  docs:
+    name: docs
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the API docs
+        run: |
+          cmake --preset dev -DBUILD_DOCS=ON
+          cmake --build --preset dev --target docs
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs
+          path: build/dev/docs/html/
+          retention-days: 14
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build, test and check coverage
+        run: cmake --workflow --preset coverage
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: build/coverage/coverage/
+          retention-days: 14
