@@ -20,7 +20,7 @@ jobs:
   build-and-test:
     name: build and test
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.0@sha256:33e6d3edeeaa669eb0e05aed51cc490ef3012b35e38ec98b691d92edb2e5252e
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
     # A normal run takes a minute or two. Without a limit a hung job holds the
     # runner for GitHub's six-hour default.
     timeout-minutes: 30
