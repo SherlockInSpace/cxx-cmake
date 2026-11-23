@@ -27,6 +27,9 @@ jobs:
   build-and-test:
     name: build and test (gcc 14, ubuntu-24.04)
     runs-on: ubuntu-24.04
+    # A normal run takes a minute or two. Without a limit a hung apt or pip
+    # download holds the job for GitHub's six-hour default.
+    timeout-minutes: 30
     env:
       CXX: g++-14
     steps:
