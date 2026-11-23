@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/SherlockInSpace/cxx-cmake-library/compare/v0.3.0...v0.4.0) (2026-11-23)
+
+
+### Features
+
+* **ci:** switches on the reusable workflows for projects without every leg ([7ea6854](https://github.com/SherlockInSpace/cxx-cmake-library/commit/7ea6854f006d2794ea04331ce4928cd27f0530d6)), closes [#138](https://github.com/SherlockInSpace/cxx-cmake-library/issues/138)
+
 ## [0.3.0](https://github.com/SherlockInSpace/cxx-cmake-library/compare/v0.2.0...v0.3.0) (2026-11-23)
 
 
