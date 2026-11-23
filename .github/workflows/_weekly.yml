@@ -41,6 +41,8 @@ jobs:
       - name: Start the gh-pages branch on first use
         run: |
           if ! git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            # An orphan switch leaves no previous branch for "git switch -".
+            start=$(git symbolic-ref -q --short HEAD || git rev-parse HEAD)
             git switch --orphan gh-pages
             echo "Benchmark history for the Pages dashboard, written by CI." > README.md
             git add README.md
@@ -48,7 +50,7 @@ jobs:
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit -m "chore: start gh-pages for the benchmark history"
             git push origin gh-pages
-            git switch -
+            git checkout -q "$start"
           fi
 
       # A scheduled run's event names no commit, so ref says which one.
