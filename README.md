@@ -28,7 +28,7 @@ compiler, CMake and libraries. From the directory above your checkouts:
 ```sh
 docker run --rm -it -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
   -v "$PWD":/work -v cxx-cmake-ccache:/home/dev/.cache/ccache \
-  ghcr.io/sherlockinspace/cxx-cmake-container/dev:0.1.0@sha256:d2ceb37bc0c1a0e72b9bd48b2722f9620e710b5cd3135bf2159c5d908678a055
+  ghcr.io/sherlockinspace/cxx-cmake-container/dev:0.1.1@sha256:0f1c38471816ff6b39bbc646aca13743a58da67a84e0cde18ab1e844495c3e58
 ```
 
 `HOST_UID`/`HOST_GID` make the files you create under `/work` yours, and the
