@@ -1,13 +1,14 @@
-# Minimal build-and-test gate for pull requests and pushes to the integration
-# branches, in the cxx-cmake-container ci image. The image is named by version
-# and digest; README "Manual pins" says how to move it.
+# Pull request gate, in the cxx-cmake-container ci image (named by version and
+# digest; README "Manual pins" says how to move it). gcc Debug and Release
+# build with warnings as errors and run the unit and functional tiers, each
+# reported test by test as its own check. clang-format checks the layout.
 name: ci
 
 on:
   pull_request:
-    branches: [library, main]
+    branches: [main]
   push:
-    branches: [library, main]
+    branches: [main]
 
 permissions:
   contents: read
@@ -17,15 +18,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: build and test
+  build:
+    name: gcc ${{ matrix.preset }}
     runs-on: ubuntu-24.04
     container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
-    # A normal run takes a minute or two. Without a limit a hung job holds the
+    # A normal run takes a few minutes. Without a limit a hung job holds the
     # runner for GitHub's six-hour default.
     timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [ci-debug, ci-release]
+    env:
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     steps:
       - uses: actions/checkout@v7
 
-      - name: Configure, build and test (warnings are errors)
-        run: cmake --workflow --preset ci-debug
+      # Inside the container github.workspace is the host's path, so the
+      # cache directory comes from the shell's GITHUB_WORKSPACE.
+      - name: Point ccache at the workspace
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.preset }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} -L 'unit|functional'
+
+      - name: ccache statistics
+        if: ${{ !cancelled() }}
+        run: ccache --show-stats
+
+      - name: Report tests
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: build/${{ matrix.preset }}/junit.xml
+          check_name: tests (gcc ${{ matrix.preset }})
+          include_passed: true
+          detailed_summary: true
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # The checkout belongs to the runner's user and the container runs as
+      # root, so git needs telling that the directory is safe.
+      - name: Check formatting
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          clang-format --dry-run -Werror $(git ls-files 'src/*.cpp' 'inc/util/bit.hpp' 'inc/util/bloom.hpp' 'test/*.cpp' 'bench/*.cpp')
