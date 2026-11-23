@@ -2,6 +2,10 @@
 # Debug and Release on amd64 and on arm64, every test the build registers.
 # The arm64 leg runs natively on GitHub's arm64 runner. A last leg builds
 # without the image, from Ubuntu 26.04's own packages.
+#
+# The same suite runs weekly. The image does not change between runs, but
+# the runners, Ubuntu's archive, PyPI and the actions do; a failed weekly run
+# opens one issue, or comments on it if it is still open.
 name: post-merge
 
 on:
@@ -10,14 +14,17 @@ on:
   # A change to this file runs it before it merges.
   pull_request:
     paths: [.github/workflows/post-merge.yml]
+  schedule:
+    - cron: "17 4 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# A newer push to main tests everything the older one did.
+# A newer push to main tests everything the older one did. The weekly run
+# has its own group so a push does not cancel it.
 concurrency:
-  group: post-merge-${{ github.ref }}
+  group: post-merge-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -102,3 +109,28 @@ jobs:
 
       - name: Configure, build and test
         run: cmake --workflow --preset ci-debug
+
+  drift-issue:
+    needs: [suite, distro]
+    if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the drift issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="ci: weekly run fails on main"
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title \
+            --jq "map(select(.title == \"$title\"))[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "Failed again on $(date -u +%F): $RUN_URL"
+          else
+            gh issue create --title "$title" --body "$(printf '%s\n\n%s\n' \
+              "The weekly run of the post-merge suite failed on $(date -u +%F): $RUN_URL" \
+              "If main has not changed since its last green run, look at what moves underneath it: the runner image, Ubuntu's archive (the distro leg), PyPI or an action.")"
+          fi
