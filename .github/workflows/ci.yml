@@ -22,7 +22,7 @@ jobs:
   build:
     name: ${{ matrix.compiler }} ${{ matrix.preset }}
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     # A normal run takes a few minutes. Without a limit a hung job holds the
     # runner for GitHub's six-hour default.
     timeout-minutes: 30
@@ -84,7 +84,7 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -110,7 +110,7 @@ jobs:
   asan-ubsan:
     name: asan-ubsan
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -121,7 +121,7 @@ jobs:
   tidy:
     name: clang-tidy
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     env:
       CXX: clang++
@@ -132,12 +132,12 @@ jobs:
         run: cmake --preset ci-debug
 
       - name: Run clang-tidy
-        run: run-clang-tidy-22 -quiet -p build/ci-debug 'src/|test/unit/|bench/'
+        run: run-clang-tidy -quiet -p build/ci-debug 'src/|test/unit/|bench/'
 
   format:
     name: clang-format
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7

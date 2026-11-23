@@ -4,7 +4,7 @@
 // there for CPM_<NAME>_SOURCE overrides, and ccache shares its volume.
 {
   "name": "cxx-cmake-library",
-  "image": "ghcr.io/sherlockinspace/cxx-cmake-container/dev:0.1.1@sha256:0f1c38471816ff6b39bbc646aca13743a58da67a84e0cde18ab1e844495c3e58",
+  "image": "ghcr.io/sherlockinspace/cxx-cmake-container/dev:0.1.2@sha256:3c8e7e5ea2295c8ee06de03e9622e6b4063d47417e50e3caf4e3a7e66d79c22a",
   "workspaceMount": "source=${localWorkspaceFolder}/..,target=/work,type=bind",
   "workspaceFolder": "/work/${localWorkspaceFolderBasename}",
   "mounts": [
