@@ -43,6 +43,7 @@ jobs:
     uses: ./.github/workflows/_bench.yml
     with:
       image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.4@sha256:ae3b9849e3d10e0b653453e53c886d50a8d1c04bd5b77a3baf8e7df95b2b285a
+      capture: true
 
   # One site from this run's artifacts: the API docs at the root, the coverage
   # report under coverage/ and the benchmark dashboard under bench/. Only main
