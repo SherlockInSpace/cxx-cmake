@@ -97,6 +97,15 @@
         "CMAKE_BUILD_TYPE": "Release",
         "BUILD_BENCH": "ON"
       }
+    },
+    {
+      "name": "profile",
+      "inherits": "base",
+      "displayName": "Tracy profiling harness (RelWithDebInfo)",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_PROFILE": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -138,6 +147,10 @@
     {
       "name": "bench",
       "configurePreset": "bench"
+    },
+    {
+      "name": "profile",
+      "configurePreset": "profile"
     }
   ],
   "testPresets": [
@@ -213,6 +226,16 @@
       "execution": {
         "noTestsAction": "error",
         "jobs": 1
+      }
+    },
+    {
+      "name": "profile",
+      "inherits": "base",
+      "configurePreset": "profile",
+      "filter": {
+        "include": {
+          "label": "profile"
+        }
       }
     }
   ],
@@ -350,6 +373,23 @@
         {
           "type": "test",
           "name": "bench"
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "profile"
+        },
+        {
+          "type": "build",
+          "name": "profile"
+        },
+        {
+          "type": "test",
+          "name": "profile"
         }
       ]
     }

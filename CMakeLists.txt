@@ -195,6 +195,20 @@ if(BUILD_BENCH)
   add_subdirectory(bench)
 endif()
 
+# Tracy profiling harness, the other half of the performance tier. util has no
+# Tracy code in any configuration; bench/profile/ wraps calls to it in zones
+# from outside, and Tracy's sampling shows what happens inside. Off by default
+# because it needs Tracy; the profile preset turns it on (docs/profiling.md).
+option(BUILD_PROFILE "Build the Tracy profiling harness in bench/profile/" OFF)
+
+if(BUILD_PROFILE)
+  if(UTIL_COVERAGE)
+    message(FATAL_ERROR "BUILD_PROFILE and UTIL_COVERAGE do not mix: "
+      "coverage instrumentation distorts the profile")
+  endif()
+  add_subdirectory(bench/profile)
+endif()
+
 if(UTIL_COVERAGE)
   if(NOT BUILD_TESTING)
     message(FATAL_ERROR "UTIL_COVERAGE needs BUILD_TESTING=ON")
