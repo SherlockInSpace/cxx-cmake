@@ -2,7 +2,7 @@
 # digest; README "Manual pins" says how to move it). gcc and clang, Debug and
 # Release, build with warnings as errors and run the unit and functional
 # tiers, each reported test by test as its own check. coverage checks the
-# floors and clang-format the layout.
+# floors, clang-tidy the diagnostics and naming, clang-format the layout.
 # Pushes to main run the full suite instead (post-merge.yml).
 name: ci
 
@@ -101,6 +101,25 @@ jobs:
           name: coverage
           path: build/coverage/coverage/
           retention-days: 14
+
+  # clang-tidy reads each file's flags from compile_commands.json, so the tree
+  # is configured with clang, whose flags it understands. .clang-tidy makes
+  # every warning an error.
+  tidy:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 30
+    env:
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure with clang
+        run: cmake --preset ci-debug
+
+      - name: Run clang-tidy
+        run: run-clang-tidy-22 -quiet -p build/ci-debug 'src/|test/unit/|bench/'
 
   format:
     name: clang-format
