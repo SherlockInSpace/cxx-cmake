@@ -1,8 +1,8 @@
 # Pull request gate, in the cxx-cmake-container ci image (named by version and
 # digest; README "Manual pins" says how to move it). gcc and clang, Debug and
 # Release, build with warnings as errors and run the unit and functional
-# tiers, each reported test by test as its own check. clang-format checks the
-# layout.
+# tiers, each reported test by test as its own check. coverage checks the
+# floors and clang-format the layout.
 # Pushes to main run the full suite instead (post-merge.yml).
 name: ci
 
@@ -76,6 +76,31 @@ jobs:
           check_name: tests (${{ matrix.compiler }} ${{ matrix.preset }})
           include_passed: true
           detailed_summary: true
+
+  # The coverage target fails under 90% of lines in total or 80% in any one
+  # file (UTIL_COVERAGE_FAIL_UNDER_LINE, UTIL_COVERAGE_FILE_FLOOR); its table
+  # goes on the run's summary page either way.
+  coverage:
+    name: coverage
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build, test and check coverage
+        run: cmake --workflow --preset coverage
+
+      - name: Coverage table
+        if: ${{ !cancelled() && hashFiles('build/coverage/coverage/summary.md') != '' }}
+        run: cat build/coverage/coverage/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('build/coverage/coverage/summary.md') != '' }}
+        with:
+          name: coverage
+          path: build/coverage/coverage/
+          retention-days: 14
 
   format:
     name: clang-format
