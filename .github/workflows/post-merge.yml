@@ -33,7 +33,7 @@ jobs:
       contents: read
       checks: write
     with:
-      image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
+      image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.3@sha256:2a3860c0a99d32e3edb922999a67f444eb2451fab3ca35869ecd7e1318a269c7
 
   # One site from this run's artifacts: the API docs at the root and the
   # coverage report under coverage/. Only a push to main publishes it.
