@@ -278,3 +278,37 @@ bumped by hand:
 Until the image is published, CI runs on GitHub's `ubuntu-24.04` runner with apt
 packages and CMake from PyPI; see `.github/workflows/ci.yml`.
 
+## Using this template
+
+Create a repository from this template, then make it yours. The example name
+`util` is deliberately forgettable; replace it everywhere.
+
+Rename checklist, with `mylib` standing for your name:
+
+- [ ] `project("util" ...)` in `CMakeLists.txt`, and its `DESCRIPTION` and
+      `HOMEPAGE_URL`;
+- [ ] the `util` namespace in every header and source;
+- [ ] `inc/util/` to `inc/mylib/`, and every `#include <util/...>`;
+- [ ] `cmake/utilConfig.cmake.in` to `cmake/mylibConfig.cmake.in`;
+- [ ] the `UTIL_` options and helper targets: `UTIL_TEST_EXEMPT`,
+      `UTIL_COVERAGE*`, `UTIL_WARNINGS_AS_ERRORS`, `UTIL_INSTALL_CMAKEDIR`,
+      `util_warnings`, `util_unit_tests`, `util_bench`;
+- [ ] `util::util` in `test/` and `test/functional/consumer/`;
+- [ ] `HeaderFilterRegex` in `.clang-tidy`;
+- [ ] the copyright lines in `LICENSE`, `REUSE.toml` and the SPDX headers;
+- [ ] this README and `docs/` where they name `util` or this repository.
+
+Delete the example code and keep the machinery:
+
+| Delete | Keep |
+|---|---|
+| `src/bloom.cpp`, `inc/util/bit.hpp`, `inc/util/bloom.hpp` | `CMakeLists.txt`, `CMakePresets.json`, `cmake/` |
+| `test/unit/src/*.cpp` (write your own, one per source and header) | `test/CMakeLists.txt`, `test/unit/CMakeLists.txt` |
+| `bench/src/*.cpp` (write your own) | `bench/CMakeLists.txt` |
+| `inc/util/thread_pool.hpp` and its `THIRD_PARTY_NOTICES.md` entry, unless you use it | `test/functional/` (update `consumer/main.cpp` to use your API) |
+| the OpenSSL `CPMAddPackage`, and its `find_dependency` in the config template, if you do not need it | `.clang-format`, `.clang-tidy`, `.editorconfig`, `REUSE.toml`, `LICENSES/` |
+| | `docs/DECISIONS.md` and `docs/DESIGN.md`: edit them to say what your project decided |
+
+Then reset the version in `project()` to `0.1.0` and run
+`cmake --workflow --preset ci-debug` and `cmake --workflow --preset coverage`
+before your first commit.
