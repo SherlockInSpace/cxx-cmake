@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/SherlockInSpace/cxx-cmake-library/compare/v0.2.0...v0.3.0) (2026-11-23)
+
+
+### Features
+
+* **perf:** Tracy harness targets in the performance tier ([8dec138](https://github.com/SherlockInSpace/cxx-cmake-library/commit/8dec138e0fe50ac457bebd8f5eafdd7f623d7031)), closes [#57](https://github.com/SherlockInSpace/cxx-cmake-library/issues/57)
+
+
+### Bug Fixes
+
+* **ci:** deploy Pages from a separate job after the upload ([9714f40](https://github.com/SherlockInSpace/cxx-cmake-library/commit/9714f4025161b327fd11e830ccda6e076d79611a)), closes [#127](https://github.com/SherlockInSpace/cxx-cmake-library/issues/127)
+* **ci:** switch back explicitly after starting gh-pages ([d14ee15](https://github.com/SherlockInSpace/cxx-cmake-library/commit/d14ee15d627409ff16467f784931040550bcc639)), closes [#131](https://github.com/SherlockInSpace/cxx-cmake-library/issues/131)
+
 ## [0.2.0](https://github.com/SherlockInSpace/cxx-cmake-library/compare/v0.1.0...v0.2.0) (2026-11-23)
 
 
