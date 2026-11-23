@@ -1,0 +1,79 @@
+# Full suite on every push to main, in the same ci image as the gate: gcc
+# Debug and Release on amd64 and on arm64, every test the build registers.
+# The arm64 leg runs natively on GitHub's arm64 runner.
+name: post-merge
+
+on:
+  push:
+    branches: [main]
+  # A change to this file runs it before it merges.
+  pull_request:
+    paths: [.github/workflows/post-merge.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to main tests everything the older one did.
+concurrency:
+  group: post-merge-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suite:
+    name: ${{ matrix.arch }} gcc ${{ matrix.preset }}
+    runs-on: ${{ matrix.runner }}
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        preset: [ci-debug, ci-release]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    env:
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+    steps:
+      - uses: actions/checkout@v7
+
+      # Inside the container github.workspace is the host's path, so the
+      # cache directory comes from the shell's GITHUB_WORKSPACE.
+      - name: Point ccache at the workspace
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+
+      # The amd64 keys match the gate's, so pull requests start from main's
+      # cache.
+      - uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.arch }}-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.arch }}-${{ matrix.preset }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+      - name: ccache statistics
+        if: ${{ !cancelled() }}
+        run: ccache --show-stats
+
+      - name: Report tests
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: build/${{ matrix.preset }}/junit.xml
+          check_name: tests (${{ matrix.arch }} gcc ${{ matrix.preset }})
+          include_passed: true
+          detailed_summary: true
