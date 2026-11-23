@@ -27,8 +27,8 @@ compiler, CMake and libraries. From the directory above your checkouts:
 
 ```sh
 docker run --rm -it -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
-  -v "$PWD":/work -v cxx-cmake-ccache:/home/dev/.ccache \
-  ghcr.io/sherlockinspace/cxx-cmake-container/dev:X.Y.Z@sha256:<digest>
+  -v "$PWD":/work -v cxx-cmake-ccache:/home/dev/.cache/ccache \
+  ghcr.io/sherlockinspace/cxx-cmake-container/dev:0.1.0@sha256:d2ceb37bc0c1a0e72b9bd48b2722f9620e710b5cd3135bf2159c5d908678a055
 ```
 
 `HOST_UID`/`HOST_GID` make the files you create under `/work` yours, and the
@@ -274,9 +274,6 @@ bumped by hand:
 - **`cmake/CPM.cmake`**, the vendored CPM release. Replace it with the newer
   release's `CPM.cmake` asset, check its SHA-256 against the release, and update
   the version and hash in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-Until the image is published, CI runs on GitHub's `ubuntu-24.04` runner with apt
-packages and CMake from PyPI; see `.github/workflows/ci.yml`.
 
 ## Using this template
 
