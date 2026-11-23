@@ -3,6 +3,7 @@
 # The arm64 leg runs natively on GitHub's arm64 runner. One leg builds
 # without the image, from Ubuntu 26.04's own packages, one runs the tests
 # under ThreadSanitizer, and one builds the API docs with warnings as errors.
+# A push to main then publishes the docs and the coverage report to Pages.
 #
 # The same suite runs weekly. The image does not change between runs, but
 # the runners, Ubuntu's archive, PyPI and the actions do; a failed weekly run
@@ -144,8 +145,58 @@ jobs:
           path: build/dev/docs/html/
           retention-days: 14
 
+  # The same coverage run as the gate, kept here so main's report can be
+  # published.
+  coverage:
+    name: coverage
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build, test and check coverage
+        run: cmake --workflow --preset coverage
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: build/coverage/coverage/
+          retention-days: 14
+
+  # One site from this run's artifacts: the API docs at the root and the
+  # coverage report under coverage/. Only a push to main publishes it.
+  pages:
+    needs: [docs, coverage]
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: docs
+          path: site
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: coverage
+          path: site/coverage
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v5
+
   drift-issue:
-    needs: [suite, distro, tsan, docs]
+    needs: [suite, distro, tsan, docs, coverage]
     if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5

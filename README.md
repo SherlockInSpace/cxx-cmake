@@ -227,6 +227,11 @@ Any Doxygen warning fails the target, so an undocumented public symbol or a stal
 theme, which the build picks up from `/usr/share/doxygen-awesome-css`; elsewhere
 the docs use Doxygen's own theme.
 
+Every push to `main` publishes the docs and the coverage report to GitHub Pages:
+<https://sherlockinspace.github.io/cxx-cmake-library/>, with coverage under
+[`coverage/html/`](https://sherlockinspace.github.io/cxx-cmake-library/coverage/html/).
+A fork turns Pages on under Settings > Pages > Source: GitHub Actions.
+
 ## Formatting and static analysis
 
 `.clang-format` owns layout and `.clang-tidy` owns diagnostics and the camelCase
