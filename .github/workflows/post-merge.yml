@@ -1,8 +1,8 @@
 # Full suite on every push to main, in the same ci image as the gate: gcc
 # Debug and Release on amd64 and on arm64, every test the build registers.
 # The arm64 leg runs natively on GitHub's arm64 runner. One leg builds
-# without the image, from Ubuntu 26.04's own packages, and one runs the tests
-# under ThreadSanitizer.
+# without the image, from Ubuntu 26.04's own packages, one runs the tests
+# under ThreadSanitizer, and one builds the API docs with warnings as errors.
 #
 # The same suite runs weekly. The image does not change between runs, but
 # the runners, Ubuntu's archive, PyPI and the actions do; a failed weekly run
@@ -124,8 +124,28 @@ jobs:
       - name: Build and test under ThreadSanitizer
         run: cmake --workflow --preset tsan
 
+  # The docs target sets WARN_AS_ERROR, so any Doxygen warning fails the job.
+  docs:
+    name: docs
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the API docs
+        run: |
+          cmake --preset dev -DBUILD_DOCS=ON
+          cmake --build --preset dev --target docs
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs
+          path: build/dev/docs/html/
+          retention-days: 14
+
   drift-issue:
-    needs: [suite, distro, tsan]
+    needs: [suite, distro, tsan, docs]
     if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
