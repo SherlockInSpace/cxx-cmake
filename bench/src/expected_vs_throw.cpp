@@ -7,11 +7,17 @@
 // close; on the failure path the exception has to be thrown, unwound and
 // caught, and costs far more. The last benchmark is the real thing,
 // Bloom::create with a count it refuses.
+//
+// One check takes about a nanosecond, too close to the timer and to a shared
+// runner's noise to compare from one release to the next, so each iteration
+// makes a batch of kCalls calls (the "/1000" in each name) and reports calls
+// per second.
 
 #include <util/bloom.hpp>
 
 #include <benchmark/benchmark.h>
 
+#include <cstdint>
 #include <expected>
 #include <stdexcept>
 
@@ -40,62 +46,85 @@ enum class CheckError : unsigned char
     return value;
 }
 
+// Calls per iteration for every benchmark here.
+constexpr std::int64_t kCalls = 1000;
+
 void expectedSuccess(benchmark::State& state)
 {
+    const std::int64_t calls = state.range(0);
     int input = 1;
     for ([[maybe_unused]] auto iteration : state) {
-        benchmark::DoNotOptimize(input);
-        benchmark::DoNotOptimize(checkExpected(input));
+        for (std::int64_t call = 0; call < calls; ++call) {
+            benchmark::DoNotOptimize(input);
+            benchmark::DoNotOptimize(checkExpected(input));
+        }
     }
+    state.SetItemsProcessed(state.iterations() * calls);
 }
-BENCHMARK(expectedSuccess)->Name("expected_vs_throw/expected_success");
+BENCHMARK(expectedSuccess)->Name("expected_vs_throw/expected_success")->Arg(kCalls);
 
 void expectedFailure(benchmark::State& state)
 {
+    const std::int64_t calls = state.range(0);
     int input = 0;
     for ([[maybe_unused]] auto iteration : state) {
-        benchmark::DoNotOptimize(input);
-        benchmark::DoNotOptimize(checkExpected(input));
+        for (std::int64_t call = 0; call < calls; ++call) {
+            benchmark::DoNotOptimize(input);
+            benchmark::DoNotOptimize(checkExpected(input));
+        }
     }
+    state.SetItemsProcessed(state.iterations() * calls);
 }
-BENCHMARK(expectedFailure)->Name("expected_vs_throw/expected_failure");
+BENCHMARK(expectedFailure)->Name("expected_vs_throw/expected_failure")->Arg(kCalls);
 
 void throwSuccess(benchmark::State& state)
 {
+    const std::int64_t calls = state.range(0);
     int input = 1;
     for ([[maybe_unused]] auto iteration : state) {
-        benchmark::DoNotOptimize(input);
-        try {
-            benchmark::DoNotOptimize(checkThrow(input));
-        } catch (const std::invalid_argument& error) {
-            benchmark::DoNotOptimize(&error);
+        for (std::int64_t call = 0; call < calls; ++call) {
+            benchmark::DoNotOptimize(input);
+            try {
+                benchmark::DoNotOptimize(checkThrow(input));
+            } catch (const std::invalid_argument& error) {
+                benchmark::DoNotOptimize(&error);
+            }
         }
     }
+    state.SetItemsProcessed(state.iterations() * calls);
 }
-BENCHMARK(throwSuccess)->Name("expected_vs_throw/throw_success");
+BENCHMARK(throwSuccess)->Name("expected_vs_throw/throw_success")->Arg(kCalls);
 
 void throwFailure(benchmark::State& state)
 {
+    const std::int64_t calls = state.range(0);
     int input = 0;
     for ([[maybe_unused]] auto iteration : state) {
-        benchmark::DoNotOptimize(input);
-        try {
-            benchmark::DoNotOptimize(checkThrow(input));
-        } catch (const std::invalid_argument& error) {
-            benchmark::DoNotOptimize(&error);
+        for (std::int64_t call = 0; call < calls; ++call) {
+            benchmark::DoNotOptimize(input);
+            try {
+                benchmark::DoNotOptimize(checkThrow(input));
+            } catch (const std::invalid_argument& error) {
+                benchmark::DoNotOptimize(&error);
+            }
         }
     }
+    state.SetItemsProcessed(state.iterations() * calls);
 }
-BENCHMARK(throwFailure)->Name("expected_vs_throw/throw_failure");
+BENCHMARK(throwFailure)->Name("expected_vs_throw/throw_failure")->Arg(kCalls);
 
 void bloomCreateRefused(benchmark::State& state)
 {
+    const std::int64_t calls = state.range(0);
     std::size_t count = 0;
     for ([[maybe_unused]] auto iteration : state) {
-        benchmark::DoNotOptimize(count);
-        benchmark::DoNotOptimize(util::Bloom::create(count));
+        for (std::int64_t call = 0; call < calls; ++call) {
+            benchmark::DoNotOptimize(count);
+            benchmark::DoNotOptimize(util::Bloom::create(count));
+        }
     }
+    state.SetItemsProcessed(state.iterations() * calls);
 }
-BENCHMARK(bloomCreateRefused)->Name("expected_vs_throw/bloom_create_refused");
+BENCHMARK(bloomCreateRefused)->Name("expected_vs_throw/bloom_create_refused")->Arg(kCalls);
 
 } // namespace

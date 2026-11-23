@@ -212,6 +212,9 @@ labelled `performance`, and writes Google Benchmark JSON to
 `build/bench/bench/results/<name>.json`. `BUILD_BENCH` refuses Debug and coverage
 builds, which time the wrong thing. Benchmarks run weekly and at release rather
 than per commit, because a single run on a shared machine is noisy; read the trend.
+A benchmark whose single call takes about a nanosecond times a batch of calls
+per iteration instead (the `expected_vs_throw` ones run 1000), because a
+nanosecond is within the runner's noise and would trip the release comparison.
 
 CI runs them in three places, through `.github/workflows/_bench.yml`:
 
