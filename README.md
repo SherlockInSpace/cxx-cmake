@@ -32,7 +32,10 @@ docker run --rm -it -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
 ```
 
 `HOST_UID`/`HOST_GID` make the files you create under `/work` yours, and the
-named volume keeps ccache's cache between containers. Then, in the container:
+named volume keeps ccache's cache between containers. Editors that support Dev
+Containers (VS Code, CLion, the `devcontainer` CLI) can open the checkout
+instead: `.devcontainer/devcontainer.json` starts the same image with the same
+mounts. Then, in the container:
 
 ```sh
 cd /work/cxx-cmake-library
@@ -310,6 +313,7 @@ Rename checklist, with `mylib` standing for your name:
       `util_warnings`, `util_unit_tests`, `util_bench`;
 - [ ] `util::util` in `test/` and `test/functional/consumer/`;
 - [ ] `HeaderFilterRegex` in `.clang-tidy`;
+- [ ] `name` in `.devcontainer/devcontainer.json`;
 - [ ] the copyright lines in `LICENSE`, `REUSE.toml` and the SPDX headers;
 - [ ] this README and `docs/` where they name `util` or this repository.
 
