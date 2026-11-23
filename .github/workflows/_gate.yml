@@ -27,6 +27,14 @@ on:
         description: regular expression run-clang-tidy matches against file paths
         type: string
         default: src/|test/unit/|bench/
+      test-labels:
+        description: CTest label regular expression the build jobs run
+        type: string
+        default: unit|functional
+      coverage:
+        description: run the coverage preset (the caller needs one)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -76,7 +84,9 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }}
 
       - name: Test
-        run: ctest --preset ${{ matrix.preset }} -L 'unit|functional'
+        env:
+          TEST_LABELS: ${{ inputs.test-labels }}
+        run: ctest --preset ${{ matrix.preset }} -L "$TEST_LABELS"
 
       - name: ccache statistics
         if: ${{ !cancelled() }}
@@ -96,6 +106,7 @@ jobs:
   # on the run's summary page either way.
   coverage:
     name: coverage
+    if: ${{ inputs.coverage }}
     runs-on: ubuntu-24.04
     container: ${{ inputs.image }}
     timeout-minutes: 30

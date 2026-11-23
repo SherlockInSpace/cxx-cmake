@@ -3,7 +3,8 @@
 # builds without the image, from Ubuntu 26.04's own packages; tsan runs the
 # tests under ThreadSanitizer; docs builds the API docs with warnings as
 # errors; coverage checks the floors. docs and coverage leave their HTML as
-# the docs and coverage artifacts. The caller grants checks: write.
+# the docs and coverage artifacts. A project without one of these legs turns
+# it off with the matching input. The caller grants checks: write.
 name: full
 
 on:
@@ -17,6 +18,22 @@ on:
         description: apt packages the leg without the image installs
         type: string
         default: g++-15 ninja-build libssl-dev libgtest-dev libgmock-dev
+      distro:
+        description: run the leg without the image (every dependency must be in Ubuntu)
+        type: boolean
+        default: true
+      tsan:
+        description: run the tsan preset
+        type: boolean
+        default: true
+      docs:
+        description: build the docs target (BUILD_DOCS) and keep the docs artifact
+        type: boolean
+        default: true
+      coverage:
+        description: run the coverage preset and keep the coverage artifact
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -85,6 +102,7 @@ jobs:
   # to show the build needs nothing the image adds.
   distro:
     name: ubuntu-26.04 gcc-15 without the image
+    if: ${{ inputs.distro }}
     runs-on: ubuntu-26.04
     timeout-minutes: 30
     env:
@@ -110,6 +128,7 @@ jobs:
   # here rather than on every pull request.
   tsan:
     name: tsan
+    if: ${{ inputs.tsan }}
     runs-on: ubuntu-24.04
     container: ${{ inputs.image }}
     timeout-minutes: 30
@@ -122,6 +141,7 @@ jobs:
   # The docs target sets WARN_AS_ERROR, so any Doxygen warning fails the job.
   docs:
     name: docs
+    if: ${{ inputs.docs }}
     runs-on: ubuntu-24.04
     container: ${{ inputs.image }}
     timeout-minutes: 15
@@ -141,6 +161,7 @@ jobs:
 
   coverage:
     name: coverage
+    if: ${{ inputs.coverage }}
     runs-on: ubuntu-24.04
     container: ${{ inputs.image }}
     timeout-minutes: 30
