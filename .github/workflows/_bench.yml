@@ -1,6 +1,7 @@
 # Runs the performance tier in the image: the benchmarks (the bench workflow
 # preset), left as the bench artifact, one Google Benchmark JSON file with
-# every benchmark, and the Tracy harness (the profile preset). The caller decides what to compare it with: the
+# every benchmark, and the Tracy harness (the profile preset), whose trace
+# tracy-capture can record as the tracy artifact. The caller decides what to compare it with: the
 # dashboard on a weekly run or a perf-labelled pull request, the last release
 # on a release pull request.
 name: bench
@@ -16,6 +17,10 @@ on:
         description: commit or tag to benchmark (default the event's)
         type: string
         default: ""
+      capture:
+        description: record a Tracy trace of the harness as the tracy artifact
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -70,3 +75,25 @@ jobs:
 
       - name: Build and run the profiling harness
         run: cmake --workflow --preset profile
+
+      # tracy-capture connects to the harness on localhost and writes the
+      # trace when the harness ends; TRACY_NO_EXIT keeps the harness alive
+      # until every event has gone over. The timeouts stop a run that never
+      # connects. Sampling needs perf events, which a container doesn't get,
+      # so the trace has the harness's zones and plots only.
+      - name: Capture a trace
+        if: ${{ inputs.capture }}
+        run: |
+          timeout 300 tracy-capture -a 127.0.0.1 -o util.tracy -f &
+          capture=$!
+          TRACY_NO_EXIT=1 timeout 300 build/profile/bench/profile/util_profile
+          wait "$capture"
+          test -s util.tracy
+          ls -l util.tracy
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ inputs.capture }}
+        with:
+          name: tracy
+          path: util.tracy
+          retention-days: 30
