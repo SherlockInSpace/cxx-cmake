@@ -37,17 +37,11 @@ jobs:
 
   # One site from this run's artifacts: the API docs at the root and the
   # coverage report under coverage/. Only a push to main publishes it.
-  pages:
+  site:
     needs: full
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -63,6 +57,21 @@ jobs:
         with:
           path: site
 
+  # Separate from the upload: deploy-pages looks the artifact up through the
+  # API, which can miss one uploaded seconds earlier in the same job. If a
+  # deploy fails, re-run this job only; re-running site too leaves two
+  # github-pages artifacts and deploy-pages refuses both.
+  pages:
+    needs: site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v5
 
