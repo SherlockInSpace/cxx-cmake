@@ -33,7 +33,7 @@ jobs:
   suite:
     name: ${{ matrix.arch }} gcc ${{ matrix.preset }}
     runs-on: ${{ matrix.runner }}
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     permissions:
       contents: read
@@ -117,7 +117,7 @@ jobs:
   tsan:
     name: tsan
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -129,7 +129,7 @@ jobs:
   docs:
     name: docs
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -150,7 +150,7 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
