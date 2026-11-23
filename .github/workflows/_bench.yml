@@ -1,6 +1,6 @@
-# Runs the performance tier (the bench workflow preset) in the image and
-# leaves its results as the bench artifact: one Google Benchmark JSON file
-# with every benchmark. The caller decides what to compare it with: the
+# Runs the performance tier in the image: the benchmarks (the bench workflow
+# preset), left as the bench artifact, one Google Benchmark JSON file with
+# every benchmark, and the Tracy harness (the profile preset). The caller decides what to compare it with: the
 # dashboard on a weekly run or a perf-labelled pull request, the last release
 # on a release pull request.
 name: bench
@@ -54,3 +54,19 @@ jobs:
           name: bench
           path: bench.json
           retention-days: 30
+
+  # The Tracy harness in bench/profile/ builds and runs once without a
+  # profiler, which proves it still works; docs/profiling.md shows how to
+  # attach one.
+  profile:
+    name: profiling harness
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build and run the profiling harness
+        run: cmake --workflow --preset profile

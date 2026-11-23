@@ -225,6 +225,14 @@ CI runs them in three places, through `.github/workflows/_bench.yml`:
   and the next release pull request compares with them and fails if anything
   is more than 1.5 times slower, which holds the release until someone looks.
 
+Benchmarks say *that* something got slower; a Tracy profile shows *where*.
+`cmake --workflow --preset profile` builds `bench/profile/`, a harness that runs
+the Bloom filter and the thread pool with Tracy zones around each call into
+`util`, and runs it once. Start it with the Tracy profiler or `tracy-capture`
+listening to see the trace. `util` itself never includes Tracy: the harness
+links `Tracy::TracyClient`, and what happens inside the library comes from
+Tracy's sampling.
+
 ## Documentation
 
 `-DBUILD_DOCS=ON` adds a `docs` target that runs Doxygen over the public headers,
