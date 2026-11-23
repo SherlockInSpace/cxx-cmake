@@ -275,6 +275,24 @@ bumped by hand:
   release's `CPM.cmake` asset, check its SHA-256 against the release, and update
   the version and hash in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
+## Releases
+
+`.github/workflows/release.yml` runs release-please on every push to `main`. It
+keeps one rolling pull request that adds the `feat`, `fix`, `perf`, `build` and
+`revert` commits since the last release to `CHANGELOG.md` and writes the next
+version into `project(VERSION ...)`, on the line marked
+`x-release-please-version`. Merging it tags `vX.Y.Z` and creates the GitHub
+Release, so the tag always matches the version CMake installs. Until 1.0 a
+breaking change bumps the minor, like a `feat`.
+
+The workflow needs a fine-grained personal access token in the
+`RELEASE_PLEASE_TOKEN` secret: GitHub runs no workflows on a pull request made
+with a workflow's own token, so the gate would never run on the release pull
+request. Create the token under Settings > Developer settings > Personal access
+tokens > Fine-grained tokens, for this repository only, with Contents, Pull
+requests and Issues read and write, then run `gh secret set
+RELEASE_PLEASE_TOKEN`. A 401 from the release workflow means it has expired.
+
 ## Using this template
 
 Create a repository from this template, then make it yours. The example name
@@ -306,6 +324,9 @@ Delete the example code and keep the machinery:
 | the OpenSSL `CPMAddPackage`, and its `find_dependency` in the config template, if you do not need it | `.clang-format`, `.clang-tidy`, `.editorconfig`, `REUSE.toml`, `LICENSES/` |
 | | `docs/DECISIONS.md` and `docs/DESIGN.md`: edit them to say what your project decided |
 
-Then reset the version in `project()` to `0.1.0` and run
+Then reset the version in `project()` and in `.release-please-manifest.json`
+to `0.1.0`, delete `CHANGELOG.md`, remove `bootstrap-sha` from
+`release-please-config.json` (it names a commit in this repository's history),
+set up the release token (see "Releases"), and run
 `cmake --workflow --preset ci-debug` and `cmake --workflow --preset coverage`
 before your first commit.

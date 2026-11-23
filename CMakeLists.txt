@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 4.3)
 # Project name and configuration
 project(
   "util"
-  VERSION 0.1.0
+  VERSION 0.1.0 # x-release-please-version
   DESCRIPTION
     "Example C++ CMake library."
   HOMEPAGE_URL ""
