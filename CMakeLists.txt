@@ -298,6 +298,7 @@ if(BUILD_DOCS)
   doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/inc/util"
     "${PROJECT_SOURCE_DIR}/README.md"
+    "${PROJECT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     "${PROJECT_SOURCE_DIR}/docs"
     COMMENT "Generating the API documentation in ${DOXYGEN_OUTPUT_DIRECTORY}")
 endif()
