@@ -1,8 +1,9 @@
 # Pull request gate, in the cxx-cmake-container ci image (named by version and
 # digest; README "Manual pins" says how to move it). gcc and clang, Debug and
 # Release, build with warnings as errors and run the unit and functional
-# tiers, each reported test by test as its own check. coverage checks the
-# floors, clang-tidy the diagnostics and naming, clang-format the layout.
+# tiers, each reported test by test as its own check. asan-ubsan runs the
+# tests under the sanitizers, coverage checks the floors, clang-tidy the
+# diagnostics and naming, clang-format the layout.
 # Pushes to main run the full suite instead (post-merge.yml).
 name: ci
 
@@ -105,6 +106,18 @@ jobs:
   # clang-tidy reads each file's flags from compile_commands.json, so the tree
   # is configured with clang, whose flags it understands. .clang-tidy makes
   # every warning an error.
+  # The test preset makes any ASan, LSan or UBSan report fail the test.
+  asan-ubsan:
+    name: asan-ubsan
+    runs-on: ubuntu-24.04
+    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.1@sha256:82d661ac1fff82cf9da925386fcc4c1c0fcd4808af6685effba1ed709b5bfab1
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and test under ASan and UBSan
+        run: cmake --workflow --preset asan-ubsan
+
   tidy:
     name: clang-tidy
     runs-on: ubuntu-24.04
