@@ -52,7 +52,7 @@ target_link_libraries(util_unit_tests
 set_target_properties(util_unit_tests PROPERTIES CXX_SCAN_FOR_MODULES OFF)
 
 if(UTIL_COVERAGE)
-  target_compile_options(util_unit_tests PRIVATE --coverage)
+  target_compile_options(util_unit_tests PRIVATE --coverage -fprofile-update=atomic)
   target_link_options(util_unit_tests PRIVATE --coverage)
 endif()
 
