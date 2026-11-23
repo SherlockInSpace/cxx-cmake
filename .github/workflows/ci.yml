@@ -2,12 +2,11 @@
 # digest; README "Manual pins" says how to move it). gcc Debug and Release
 # build with warnings as errors and run the unit and functional tiers, each
 # reported test by test as its own check. clang-format checks the layout.
+# Pushes to main run the full suite instead (post-merge.yml).
 name: ci
 
 on:
   pull_request:
-    branches: [main]
-  push:
     branches: [main]
 
 permissions:
@@ -45,8 +44,8 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: .ccache
-          key: ccache-${{ matrix.preset }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.preset }}-
+          key: ccache-amd64-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-amd64-${{ matrix.preset }}-
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
