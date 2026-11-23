@@ -1,11 +1,13 @@
 # Pull request gate: _gate.yml in the cxx-cmake-container ci image, named by
 # version and digest (README "Manual pins" says how to move it). Pushes to
-# main run the full suite instead (post-merge.yml).
+# main run the full suite instead (post-merge.yml). A pull request labelled
+# perf, and every release pull request, also run the benchmarks.
 name: ci
 
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -22,3 +24,69 @@ jobs:
       checks: write
     with:
       image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.3@sha256:2a3860c0a99d32e3edb922999a67f444eb2451fab3ca35869ecd7e1318a269c7
+
+  bench:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'perf') || startsWith(github.head_ref, 'release-please--') }}
+    uses: ./.github/workflows/_bench.yml
+    with:
+      image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.3@sha256:2a3860c0a99d32e3edb922999a67f444eb2451fab3ca35869ecd7e1318a269c7
+
+  # A perf pull request is compared with the dashboard and only reports. A
+  # release pull request is compared with the last release's results and
+  # fails above the threshold, so a regression holds the release.
+  bench-compare:
+    needs: bench
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: bench
+          path: ${{ runner.temp }}/bench
+
+      - name: Find what to compare with
+        id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_HEAD_REF" == release-please--* ]]; then
+            if gh release download --repo "$GITHUB_REPOSITORY" --pattern bench-data.json --dir "$RUNNER_TEMP/base"; then
+              echo "with=release" >> "$GITHUB_OUTPUT"
+            else
+              echo "::notice::The last release has no bench-data.json, so there is nothing to compare with."
+              echo "with=nothing" >> "$GITHUB_OUTPUT"
+            fi
+          elif git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            echo "with=dashboard" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No dashboard history yet (gh-pages), so there is nothing to compare with."
+            echo "with=nothing" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compare with the last release
+        if: ${{ steps.base.outputs.with == 'release' }}
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: googlecpp
+          output-file-path: ${{ runner.temp }}/bench/bench.json
+          external-data-json-path: ${{ runner.temp }}/base/bench-data.json
+          save-data-file: false
+          alert-threshold: 150%
+          fail-on-alert: true
+          summary-always: true
+
+      - name: Compare with the dashboard
+        if: ${{ steps.base.outputs.with == 'dashboard' }}
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: googlecpp
+          output-file-path: ${{ runner.temp }}/bench/bench.json
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: bench
+          github-token: ${{ github.token }}
+          auto-push: false
+          save-data-file: false
+          alert-threshold: 150%
+          summary-always: true
