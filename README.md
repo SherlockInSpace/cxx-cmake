@@ -238,6 +238,18 @@ clang-format --dry-run -Werror $(git ls-files 'src/*.cpp' 'inc/util/bit.hpp' 'in
 run-clang-tidy -p build/dev 'src/|test/unit/|bench/'
 ```
 
+CI runs both on every pull request. To run them, and the commit-message lint, on
+each commit instead, install [pre-commit](https://pre-commit.com) (`pipx install
+pre-commit`) and enable the hooks in `.pre-commit-config.yaml`:
+
+```sh
+pre-commit install --hook-type pre-commit --hook-type commit-msg
+```
+
+They are optional and nothing depends on them. The clang-tidy hook needs
+`build/dev/compile_commands.json`, so configure the `dev` preset first; the
+commit-message hook fetches Node the first time it runs.
+
 ## Changes that span repositories
 
 A change that needs something new from another repository lands in dependency

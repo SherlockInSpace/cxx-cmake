@@ -1,0 +1,24 @@
+# Optional local hooks: the gate's format, tidy and commit-message checks,
+# run before a commit instead of after a push. Nothing depends on them; see
+# README "Formatting and static analysis" to install. clang-tidy reads
+# build/dev/compile_commands.json, so configure the dev preset first.
+repos:
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        entry: clang-format --dry-run -Werror
+        language: system
+        files: ^(src/.*\.cpp|inc/util/(bit|bloom)\.hpp|test/.*\.cpp|bench/.*\.cpp)$
+      - id: clang-tidy
+        name: clang-tidy
+        entry: clang-tidy -p build/dev --quiet
+        language: system
+        files: ^(src|test/unit)/.*\.cpp$
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.27.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ["@commitlint/config-conventional@21"]
