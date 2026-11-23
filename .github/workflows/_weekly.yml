@@ -1,7 +1,10 @@
-# Weekly-only work, called after the full suite on a schedule. The image
-# does not change between weekly runs, but the runners, Ubuntu's archive,
-# PyPI and the actions do, so a failed full suite opens one issue, or
-# comments on it while it is open. The caller grants issues: write.
+# Weekly-only work, called after the full suite and the benchmarks. The
+# benchmark results go onto the trend dashboard: github-action-benchmark
+# keeps the history on the gh-pages branch, under bench/, and the Pages site
+# copies it from there. The image does not change between weekly runs, but
+# the runners, Ubuntu's archive, PyPI and the actions do, so a failed run
+# opens one issue, or comments on it while it is open. The caller grants
+# contents: write (the dashboard) and issues: write.
 name: weekly
 
 on:
@@ -11,13 +14,58 @@ on:
         description: result of the full suite in the calling run (needs.<job>.result)
         required: true
         type: string
+      bench-result:
+        description: result of _bench.yml in the calling run
+        type: string
+        default: skipped
 
 permissions:
   contents: read
 
 jobs:
+  dashboard:
+    if: ${{ inputs.bench-result == 'success' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: bench
+          path: ${{ runner.temp }}/bench
+
+      # github-action-benchmark commits to an existing branch only.
+      - name: Start the gh-pages branch on first use
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git switch --orphan gh-pages
+            echo "Benchmark history for the Pages dashboard, written by CI." > README.md
+            git add README.md
+            git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "chore: start gh-pages for the benchmark history"
+            git push origin gh-pages
+            git switch -
+          fi
+
+      # A scheduled run's event names no commit, so ref says which one.
+      - uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: googlecpp
+          output-file-path: ${{ runner.temp }}/bench/bench.json
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: bench
+          github-token: ${{ github.token }}
+          ref: ${{ github.sha }}
+          auto-push: true
+          alert-threshold: 150%
+          summary-always: true
+
   drift-issue:
-    if: ${{ inputs.full-result == 'failure' }}
+    if: ${{ github.event_name == 'schedule' && (inputs.full-result == 'failure' || inputs.bench-result == 'failure') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -36,6 +84,6 @@ jobs:
             gh issue comment "$number" --body "Failed again on $(date -u +%F): $RUN_URL"
           else
             gh issue create --title "$title" --body "$(printf '%s\n\n%s\n' \
-              "The weekly run of the full suite failed on $(date -u +%F): $RUN_URL" \
+              "The weekly run of the full suite or the benchmarks failed on $(date -u +%F): $RUN_URL" \
               "If main has not changed since its last green run, look at what moves underneath it: the runner image, Ubuntu's archive (the distro leg), PyPI or an action.")"
           fi

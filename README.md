@@ -213,6 +213,18 @@ labelled `performance`, and writes Google Benchmark JSON to
 builds, which time the wrong thing. Benchmarks run weekly and at release rather
 than per commit, because a single run on a shared machine is noisy; read the trend.
 
+CI runs them in three places, through `.github/workflows/_bench.yml`:
+
+- **Weekly**, with the full suite. The results go onto the
+  [trend dashboard](https://sherlockinspace.github.io/cxx-cmake-library/bench/);
+  its history is kept on the `gh-pages` branch, which the first run creates.
+  Actions > post-merge > Run workflow adds a point without waiting a week.
+- **On a pull request labelled `perf`.** The run's summary compares the results
+  with the dashboard's latest point; it reports and never fails.
+- **At release.** Each GitHub Release gets `bench.json` and `bench-data.json`,
+  and the next release pull request compares with them and fails if anything
+  is more than 1.5 times slower, which holds the release until someone looks.
+
 ## Documentation
 
 `-DBUILD_DOCS=ON` adds a `docs` target that runs Doxygen over the public headers,
@@ -229,7 +241,8 @@ the docs use Doxygen's own theme.
 
 Every push to `main` publishes the docs and the coverage report to GitHub Pages:
 <https://sherlockinspace.github.io/cxx-cmake-library/>, with coverage under
-[`coverage/html/`](https://sherlockinspace.github.io/cxx-cmake-library/coverage/html/).
+[`coverage/html/`](https://sherlockinspace.github.io/cxx-cmake-library/coverage/html/)
+and the benchmark dashboard under [`bench/`](https://sherlockinspace.github.io/cxx-cmake-library/bench/).
 A fork turns Pages on under Settings > Pages > Source: GitHub Actions.
 
 ## Formatting and static analysis

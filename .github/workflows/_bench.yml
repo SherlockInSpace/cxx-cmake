@@ -1,0 +1,56 @@
+# Runs the performance tier (the bench workflow preset) in the image and
+# leaves its results as the bench artifact: one Google Benchmark JSON file
+# with every benchmark. The caller decides what to compare it with: the
+# dashboard on a weekly run or a perf-labelled pull request, the last release
+# on a release pull request.
+name: bench
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: cxx-cmake-container ci image, by version and digest
+        required: true
+        type: string
+      ref:
+        description: commit or tag to benchmark (default the event's)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    name: benchmarks
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build and run the benchmarks
+        run: cmake --workflow --preset bench
+
+      # One file per bench/src source; the reporting action reads one.
+      - name: Merge the results
+        run: |
+          python3 - build/bench/bench/results bench.json <<'EOF'
+          import glob, json, sys
+          files = sorted(glob.glob(f"{sys.argv[1]}/*.json"))
+          if not files:
+              sys.exit("no benchmark results")
+          runs = [json.load(open(f)) for f in files]
+          merged = {"context": runs[0]["context"],
+                    "benchmarks": [b for r in runs for b in r["benchmarks"]]}
+          json.dump(merged, open(sys.argv[2], "w"), indent=1)
+          print(f"{len(merged['benchmarks'])} benchmarks from {len(files)} files")
+          EOF
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bench
+          path: bench.json
+          retention-days: 30
