@@ -1,6 +1,7 @@
 # Full suite on every push to main, in the same ci image as the gate: gcc
 # Debug and Release on amd64 and on arm64, every test the build registers.
-# The arm64 leg runs natively on GitHub's arm64 runner.
+# The arm64 leg runs natively on GitHub's arm64 runner. A last leg builds
+# without the image, from Ubuntu 26.04's own packages.
 name: post-merge
 
 on:
@@ -53,8 +54,8 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: .ccache
-          key: ccache-${{ matrix.arch }}-${{ matrix.preset }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.arch }}-${{ matrix.preset }}-
+          key: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
@@ -77,3 +78,27 @@ jobs:
           check_name: tests (${{ matrix.arch }} gcc ${{ matrix.preset }})
           include_passed: true
           detailed_summary: true
+
+  # The image is one way to get the toolchain. This leg uses the distribution
+  # as it comes, plus CMake 4.3.1 from PyPI because no Ubuntu release has it,
+  # to show the build needs nothing the image adds.
+  distro:
+    name: ubuntu-26.04 gcc-15 without the image
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    env:
+      CXX: g++-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install the toolchain and libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++-15 ninja-build libssl-dev libgtest-dev libgmock-dev
+          python3 -m venv "$RUNNER_TEMP/tools"
+          "$RUNNER_TEMP/tools/bin/pip" install --quiet cmake==4.3.1
+          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Configure, build and test
+        run: cmake --workflow --preset ci-debug
