@@ -92,6 +92,10 @@ from the image or the Yocto sysroot, or configure fails. Nothing is downloaded u
 | weekly     | cron, no new commits     | did the environment drift?                       |
 | release    | a release being created  | do the benchmarks hold against the last release? |
 
+The tiers are reusable workflows: `.github/workflows/_gate.yml`, `_full.yml` and
+`_weekly.yml`. Here `ci.yml` and `post-merge.yml` call them with the image digest;
+`cxx-cmake-app` calls the same files at a library tag with its own.
+
 ## Releases
 
 Commit subjects on `main` decide the bump: `fix:` is a patch, `feat:` a minor, `!` a major.

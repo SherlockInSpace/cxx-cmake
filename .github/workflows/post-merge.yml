@@ -1,21 +1,18 @@
-# Full suite on every push to main, in the same ci image as the gate: gcc
-# Debug and Release on amd64 and on arm64, every test the build registers.
-# The arm64 leg runs natively on GitHub's arm64 runner. One leg builds
-# without the image, from Ubuntu 26.04's own packages, one runs the tests
-# under ThreadSanitizer, and one builds the API docs with warnings as errors.
-# A push to main then publishes the docs and the coverage report to Pages.
-#
-# The same suite runs weekly. The image does not change between runs, but
-# the runners, Ubuntu's archive, PyPI and the actions do; a failed weekly run
-# opens one issue, or comments on it if it is still open.
+# The full suite (_full.yml) on every push to main and weekly, in the same
+# ci image as the gate. A push to main then publishes the docs and the
+# coverage report to Pages; the weekly run hands its result to _weekly.yml,
+# which opens or updates the drift issue when it failed.
 name: post-merge
 
 on:
   push:
     branches: [main]
-  # A change to this file runs it before it merges.
+  # A change to the suite runs it before it merges.
   pull_request:
-    paths: [.github/workflows/post-merge.yml]
+    paths:
+      - .github/workflows/post-merge.yml
+      - .github/workflows/_full.yml
+      - .github/workflows/_weekly.yml
   schedule:
     - cron: "17 4 * * 1"
   workflow_dispatch:
@@ -30,144 +27,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  suite:
-    name: ${{ matrix.arch }} gcc ${{ matrix.preset }}
-    runs-on: ${{ matrix.runner }}
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
-    timeout-minutes: 30
+  full:
+    uses: ./.github/workflows/_full.yml
     permissions:
       contents: read
       checks: write
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, arm64]
-        preset: [ci-debug, ci-release]
-        include:
-          - arch: amd64
-            runner: ubuntu-24.04
-          - arch: arm64
-            runner: ubuntu-24.04-arm
-    env:
-      CMAKE_CXX_COMPILER_LAUNCHER: ccache
-    steps:
-      - uses: actions/checkout@v7
-
-      # Inside the container github.workspace is the host's path, so the
-      # cache directory comes from the shell's GITHUB_WORKSPACE.
-      - name: Point ccache at the workspace
-        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
-
-      # The amd64 keys match the gate's, so pull requests start from main's
-      # cache.
-      - uses: actions/cache@v6
-        with:
-          path: .ccache
-          key: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.arch }}-gcc-${{ matrix.preset }}-
-
-      - name: Configure
-        run: cmake --preset ${{ matrix.preset }}
-
-      - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Test
-        run: ctest --preset ${{ matrix.preset }}
-
-      - name: ccache statistics
-        if: ${{ !cancelled() }}
-        run: ccache --show-stats
-
-      - name: Report tests
-        if: ${{ !cancelled() }}
-        uses: mikepenz/action-junit-report@v6
-        with:
-          report_paths: build/${{ matrix.preset }}/junit.xml
-          check_name: tests (${{ matrix.arch }} gcc ${{ matrix.preset }})
-          include_passed: true
-          detailed_summary: true
-
-  # The image is one way to get the toolchain. This leg uses the distribution
-  # as it comes, plus CMake 4.3.1 from PyPI because no Ubuntu release has it,
-  # to show the build needs nothing the image adds.
-  distro:
-    name: ubuntu-26.04 gcc-15 without the image
-    runs-on: ubuntu-26.04
-    timeout-minutes: 30
-    env:
-      CXX: g++-15
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install the toolchain and libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            g++-15 ninja-build libssl-dev libgtest-dev libgmock-dev
-          python3 -m venv "$RUNNER_TEMP/tools"
-          "$RUNNER_TEMP/tools/bin/pip" install --quiet cmake==4.3.1
-          echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
-
-      - name: Configure, build and test
-        run: cmake --workflow --preset ci-debug
-
-  # ThreadSanitizer is slow and the thread pool is the only threaded code,
-  # so it runs here rather than on every pull request.
-  tsan:
-    name: tsan
-    runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Build and test under ThreadSanitizer
-        run: cmake --workflow --preset tsan
-
-  # The docs target sets WARN_AS_ERROR, so any Doxygen warning fails the job.
-  docs:
-    name: docs
-    runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Build the API docs
-        run: |
-          cmake --preset dev -DBUILD_DOCS=ON
-          cmake --build --preset dev --target docs
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: docs
-          path: build/dev/docs/html/
-          retention-days: 14
-
-  # The same coverage run as the gate, kept here so main's report can be
-  # published.
-  coverage:
-    name: coverage
-    runs-on: ubuntu-24.04
-    container: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Build, test and check coverage
-        run: cmake --workflow --preset coverage
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: build/coverage/coverage/
-          retention-days: 14
+    with:
+      image: ghcr.io/sherlockinspace/cxx-cmake-container/ci:0.1.2@sha256:3a4750033b0ed2a6203205804c55bfec005d9079b0f9effc70d310daf4939aba
 
   # One site from this run's artifacts: the API docs at the root and the
   # coverage report under coverage/. Only a push to main publishes it.
   pages:
-    needs: [docs, coverage]
+    needs: full
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -195,27 +66,12 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v5
 
-  drift-issue:
-    needs: [suite, distro, tsan, docs, coverage]
-    if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+  weekly:
+    needs: full
+    if: ${{ always() && github.event_name == 'schedule' }}
+    uses: ./.github/workflows/_weekly.yml
     permissions:
+      contents: read
       issues: write
-    steps:
-      - name: Open or update the drift issue
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          title="ci: weekly run fails on main"
-          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title \
-            --jq "map(select(.title == \"$title\"))[0].number // empty")
-          if [ -n "$number" ]; then
-            gh issue comment "$number" --body "Failed again on $(date -u +%F): $RUN_URL"
-          else
-            gh issue create --title "$title" --body "$(printf '%s\n\n%s\n' \
-              "The weekly run of the post-merge suite failed on $(date -u +%F): $RUN_URL" \
-              "If main has not changed since its last green run, look at what moves underneath it: the runner image, Ubuntu's archive (the distro leg), PyPI or an action.")"
-          fi
+    with:
+      full-result: ${{ needs.full.result }}

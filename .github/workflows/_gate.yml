@@ -1,0 +1,174 @@
+# The pull request gate, callable from this repository and from projects
+# built on it (uses: SherlockInSpace/cxx-cmake-library/.github/workflows/
+# _gate.yml@<tag>). gcc and clang, Debug and Release, build with warnings as
+# errors and run the unit and functional tiers, each reported test by test as
+# its own check; asan-ubsan runs the tests under the sanitizers, coverage
+# checks the floors, clang-tidy the diagnostics and naming, clang-format the
+# layout. The caller grants checks: write for the test reports.
+name: gate
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: cxx-cmake-container ci image, by version and digest
+        required: true
+        type: string
+      format-files:
+        description: git pathspecs clang-format checks, one per line
+        type: string
+        default: |
+          src/*.cpp
+          inc/util/bit.hpp
+          inc/util/bloom.hpp
+          test/*.cpp
+          bench/*.cpp
+      tidy-files:
+        description: regular expression run-clang-tidy matches against file paths
+        type: string
+        default: src/|test/unit/|bench/
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.compiler }} ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    # A normal run takes a few minutes. Without a limit a hung job holds the
+    # runner for GitHub's six-hour default.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        preset: [ci-debug, ci-release]
+        include:
+          - compiler: gcc
+            cxx: g++
+          - compiler: clang
+            cxx: clang++
+    env:
+      CXX: ${{ matrix.cxx }}
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+    steps:
+      - uses: actions/checkout@v7
+
+      # Inside the container github.workspace is the host's path, so the
+      # cache directory comes from the shell's GITHUB_WORKSPACE.
+      - name: Point ccache at the workspace
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ccache-amd64-${{ matrix.compiler }}-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: ccache-amd64-${{ matrix.compiler }}-${{ matrix.preset }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} -L 'unit|functional'
+
+      - name: ccache statistics
+        if: ${{ !cancelled() }}
+        run: ccache --show-stats
+
+      - name: Report tests
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: build/${{ matrix.preset }}/junit.xml
+          check_name: tests (${{ matrix.compiler }} ${{ matrix.preset }})
+          include_passed: true
+          detailed_summary: true
+
+  # The coverage target fails under its total and per-file line floors
+  # (UTIL_COVERAGE_FAIL_UNDER_LINE, UTIL_COVERAGE_FILE_FLOOR); its table goes
+  # on the run's summary page either way.
+  coverage:
+    name: coverage
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build, test and check coverage
+        run: cmake --workflow --preset coverage
+
+      - name: Coverage table
+        if: ${{ !cancelled() && hashFiles('build/coverage/coverage/summary.md') != '' }}
+        run: cat build/coverage/coverage/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && hashFiles('build/coverage/coverage/summary.md') != '' }}
+        with:
+          name: coverage
+          path: build/coverage/coverage/
+          retention-days: 14
+
+  # The test preset makes any ASan, LSan or UBSan report fail the test.
+  asan-ubsan:
+    name: asan-ubsan
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and test under ASan and UBSan
+        run: cmake --workflow --preset asan-ubsan
+
+  # clang-tidy reads each file's flags from compile_commands.json, so the tree
+  # is configured with clang, whose flags it understands. .clang-tidy makes
+  # every warning an error.
+  tidy:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 30
+    env:
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure with clang
+        run: cmake --preset ci-debug
+
+      - name: Run clang-tidy
+        env:
+          TIDY_FILES: ${{ inputs.tidy-files }}
+        run: run-clang-tidy -quiet -p build/ci-debug "$TIDY_FILES"
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    container: ${{ inputs.image }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # The checkout belongs to the runner's user and the container runs as
+      # root, so git needs telling that the directory is safe.
+      - name: Check formatting
+        shell: bash
+        env:
+          FORMAT_FILES: ${{ inputs.format-files }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          mapfile -t specs < <(printf '%s\n' "$FORMAT_FILES" | sed '/^[[:space:]]*$/d')
+          mapfile -t files < <(git ls-files -- "${specs[@]}")
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::format-files matched no files"
+            exit 1
+          fi
+          clang-format --dry-run -Werror "${files[@]}"
