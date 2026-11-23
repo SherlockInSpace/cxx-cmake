@@ -231,7 +231,8 @@ the Bloom filter and the thread pool with Tracy zones around each call into
 `util`, and runs it once. Start it with the Tracy profiler or `tracy-capture`
 listening to see the trace. `util` itself never includes Tracy: the harness
 links `Tracy::TracyClient`, and what happens inside the library comes from
-Tracy's sampling.
+Tracy's sampling. [docs/profiling.md](docs/profiling.md) has the steps for
+recording a trace and reading both lanes.
 
 ## Documentation
 
