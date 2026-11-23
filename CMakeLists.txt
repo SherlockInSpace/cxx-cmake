@@ -157,7 +157,9 @@ if(UTIL_COVERAGE)
       "With Clang, use -fprofile-instr-generate -fcoverage-mapping and llvm-cov instead.")
   endif()
   find_program(GCOVR_EXECUTABLE gcovr REQUIRED)
-  target_compile_options(${PROJECT_NAME} PRIVATE --coverage)
+  # The tests run util on several threads. Without atomic counters gcov can
+  # lose increments or record negative counts, and gcovr then stops.
+  target_compile_options(${PROJECT_NAME} PRIVATE --coverage -fprofile-update=atomic)
   target_link_options(${PROJECT_NAME} PRIVATE --coverage)
 endif()
 
